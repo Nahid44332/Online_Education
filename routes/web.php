@@ -48,7 +48,7 @@ Route::post('/student/login', [StudentController::class,'loginSubmit'])->name('s
 // Dashboard (Middleware Protected)
 Route::get('/student/dashboard', [StudentController::class,'dashboard'])
      ->name('student.dashboard')
-     ->middleware('student.auth');
+     ->middleware('auth:student');
 Route::post('/student/logout', [StudentController::class, 'logout'])->name('student.logout');
 
 // Teacher Applicate Status

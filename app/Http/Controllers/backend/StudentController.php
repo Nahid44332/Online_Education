@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -15,30 +16,33 @@ class StudentController extends Controller
         return view('frontend.studentLogin');
     }
 
-     public function loginSubmit(Request $request){
+    public function loginSubmit(Request $request)
+    {
 
         $request->validate([
             'email' => 'required',
             'password' => 'required',
         ]);
 
-        $credentials = $request->only('email','password');
+        $credentials = $request->only('email', 'password');
 
-        if(Auth::guard('student')->attempt($credentials)){
+        if (Auth::guard('student')->attempt($credentials)) {
             return redirect()->intended(route('student.dashboard'));
         }
 
-        return back()->with('error','Invalid Email or Password');
+        return back()->with('error', 'Invalid Email or Password');
     }
 
-     public function dashboard()
-     {
-        return view('backend.student-panel.dashboard');
+    public function dashboard()
+    {
+        $student = Auth::guard('student')->user();
+        $courses = Course::where('id', $student->course_id)->get();
+        return view('backend.student-panel.dashboard', compact('student', 'courses'));
     }
 
     public function logout(Request $request)
     {
-    Session::forget('student_id');
-    return redirect('/Student/login');
+        Auth::guard('student')->logout();
+        return redirect('/Student/login');
     }
 }
