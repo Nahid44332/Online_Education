@@ -244,3 +244,6 @@ Route::get('/student/referral-history', [ReferralController::class,'referralHist
 // Student withdraw Route...
 Route::get('/student/withdraw',[WithdrawController::class,'withdrawPage'])->name('student.withdraw.page')->middleware('student.auth');
 Route::post('/student/withdraw',[WithdrawController::class,'withdrawRequest'])->name('student.withdraw')->middleware('student.auth');
+
+//Student Course Route...
+Route::get('/student/course', [StudentController::class, 'Course'])->name('student.course')->middleware('student.auth');

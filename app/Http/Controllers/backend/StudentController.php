@@ -104,4 +104,14 @@ class StudentController extends Controller
 
         return back()->with('success', 'Password Updated Successfully');
     }
+
+   public function Course()
+{
+    $student = Auth::guard('student')->user();
+
+    // Fetch course with teacher relation
+    $course = \App\Models\Course::with('teacher')->find($student->course_id);
+
+    return view('backend.student-panel.course.course', compact('student', 'course'));
+}
 }

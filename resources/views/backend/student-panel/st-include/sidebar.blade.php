@@ -32,6 +32,14 @@
         </li>
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
+                <a class="nav-link" href="{{ route('student.course') }}">
+                    <span class="menu-title">Course</span>
+                    <i class="mdi mdi-google-classroom menu-icon"></i>
+                </a>
+            </li>
+        @endif
+        @if (Auth::guard('student')->user()->status == 1)
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('student.referral') }}">
                     <span class="menu-title">Referral</span>
                     <i class="mdi mdi-account-multiple menu-icon"></i>
