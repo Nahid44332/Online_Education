@@ -27,18 +27,21 @@ class Student extends Authenticatable
     // Relationships
     public function course()
     {
-        return $this->belongsTo(Course::class, 'course_id', 'id'); 
+        return $this->belongsTo(Course::class, 'course_id', 'id');
     }
 
-    public function payments() {
+    public function payments()
+    {
         return $this->hasMany(Payment::class);
     }
 
-    public function getTotalPaidAttribute() {
+    public function getTotalPaidAttribute()
+    {
         return $this->payments->sum('amount');
     }
 
-    public function getDueAmountAttribute() {
+    public function getDueAmountAttribute()
+    {
         return $this->total_fee - $this->total_paid;
     }
 
@@ -55,5 +58,10 @@ class Student extends Authenticatable
     public function lock()
     {
         return $this->hasOne(Lock::class, 'student_id');
+    }
+
+    public function withdraws()
+    {
+        return $this->hasMany(WithdrawRequest::class);
     }
 }

@@ -83,6 +83,14 @@
 
         <!-- Admit Card -->
         <li class="nav-item">
+            <a class="nav-link" href="{{url('/admin/withdraw/list')}}">
+                <span class="menu-title">Withdraw</span>
+                <i class="mdi mdi-cash menu-icon"></i>
+            </a>
+        </li>
+
+        <!-- Admit Card -->
+        <li class="nav-item">
             <a class="nav-link" href="{{ url('/admin/admit-card') }}">
                 <span class="menu-title">Admit Card</span>
                 <i class="mdi mdi-card-account-details-outline menu-icon"></i>

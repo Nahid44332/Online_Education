@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AboutUs;
 use App\Models\Banner;
-use App\Models\Certificate; 
+use App\Models\Certificate;
 use App\Models\Contact;
 use App\Models\Course;
-use App\Models\Education;
 use App\Models\Featured;
 use App\Models\News;
 use App\Models\Notice;
@@ -19,6 +18,7 @@ use App\Models\TeacherApplication;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Yoeunes\Toastr\Facades\Toastr;
 
 class FrontendController extends Controller
@@ -205,6 +205,8 @@ class FrontendController extends Controller
         $student->religion          = $request->religion;
         $student->course_id         = $request->course_id;
         $student->password         = Hash::make($request->password);
+        $student->referral_code = Str::upper(Str::random(8)); // unique code
+        $student->referred_by = $request->ref; // hidden input from referral link
 
         // --- Image Upload ---
         if (isset($request->image)) {

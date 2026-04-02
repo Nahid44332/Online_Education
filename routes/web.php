@@ -17,7 +17,9 @@ use App\Http\Controllers\backend\SettingController;
 use App\Http\Controllers\backend\StudentController;
 use App\Http\Controllers\backend\teachersController;
 use App\Http\Controllers\backend\TestimonialController;
+use App\Http\Controllers\backend\WithdrawController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\ReferralController;
 use App\Models\Teacher;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -41,15 +43,6 @@ Route::get('/course-details/{id}', [FrontendController::class, 'courseDetails'])
 Route::get('/admission', [FrontendController::class, 'admission']);
 Route::post('/admission/store', [FrontendController::class, 'admissionStore']);
 Route::get('/admission/print/{id}', [FrontendController::class, 'print']);
-
-//Student Login Route...
-Route::get('/Student/login', [StudentController::class, 'studentLogin']);
-Route::post('/student/login', [StudentController::class,'loginSubmit'])->name('student.login.submit');
-// Dashboard (Middleware Protected)
-Route::get('/student/dashboard', [StudentController::class,'dashboard'])
-     ->name('student.dashboard')
-     ->middleware('auth:student');
-Route::post('/student/logout', [StudentController::class, 'logout'])->name('student.logout');
 
 // Teacher Applicate Status
 Route::get('/teacher/application/success/{application_id}', [FrontendController::class, 'teacherApplicationSuccess']) ->name('frontend.application.success');
@@ -223,3 +216,31 @@ Route::post('admin/profile/update', [AdminProfileController::class, 'profileUpda
 // Admin Password
 Route::get('/admin/change-password', [AdminProfileController::class, 'changePassword']);
 Route::post('/admin/change-password', [AdminProfileController::class, 'updatePassword']);
+
+//admin Withdraw Route...
+Route::get('/admin/withdraw/list',[adminController::class,'withdrawList']);
+Route::get('/admin/withdraw/approve/{id}',[adminController::class,'withdrawApprove']);
+Route::get('/admin/withdraw/reject/{id}',[adminController::class,'withdrawReject']);
+
+//Student Login Route...
+Route::get('/Student/login', [StudentController::class, 'studentLogin']);
+Route::post('/student/login', [StudentController::class,'loginSubmit'])->name('student.login.submit');
+// Dashboard (Middleware Protected)
+Route::get('/student/dashboard', [StudentController::class,'dashboard'])
+     ->name('student.dashboard')
+     ->middleware('auth:student');
+Route::post('/student/logout', [StudentController::class, 'logout'])->name('student.logout');
+
+//student Profile Route...
+Route::get('/student/profile', [StudentController::class,'profile'])->name('student.profile');
+Route::get('/student/profile/edit', [StudentController::class,'profileEdit'])->name('student.profile.edit');
+Route::post('/student/profile/update', [StudentController::class,'profileUpdate'])->name('student.profile.update');
+Route::post('/student/password/update',[StudentController::class,'passwordUpdate'])->name('student.password.update');
+
+//Referral Route...
+Route::get('/student/referral', [ReferralController::class,'referral'])->name('student.referral')->middleware('student.auth');
+Route::get('/student/referral-history', [ReferralController::class,'referralHistroy'])->name('student.referral-histroy')->middleware('student.auth');
+
+// Student withdraw Route...
+Route::get('/student/withdraw',[WithdrawController::class,'withdrawPage'])->name('student.withdraw.page')->middleware('student.auth');
+Route::post('/student/withdraw',[WithdrawController::class,'withdrawRequest'])->name('student.withdraw')->middleware('student.auth');

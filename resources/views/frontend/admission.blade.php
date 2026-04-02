@@ -87,6 +87,8 @@
                         <input type="text" name="nationality" class="form-control" value="Bangladeshi" required>
                     </div>
 
+                    <input type="hidden" name="ref" value="{{ request('ref') }}">
+
                     <!-- Religion -->
                     <div class="form-group col-md-6 mb-3">
                         <label>Religion <span class="text-danger">*</span></label>
