@@ -14,7 +14,7 @@
                                 <p data-animation="fadeInUp" data-delay="1.3s">{{ $sitesettings->site_description }}</p>
                                 <ul>
                                     <li><a data-animation="fadeInUp" data-delay="1.9s" class="main-btn main-btn-2"
-                                            href="{{url('/Student/login')}}">Login</a></li>
+                                            href="{{url('/student/login')}}">Login</a></li>
                                     <li><a data-animation="fadeInUp" data-delay="1.9s" class="main-btn main-btn-2"
                                             href="{{ url('/admission') }}">Register</a></li>
                                 </ul>

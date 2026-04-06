@@ -42,7 +42,7 @@
                                </div>
                            </div>
                            <div class="button float-left">
-                               <a href="{{ url('/admission') }}" class="main-btn">Subadmin Login</a>
+                               <a href="{{ url('/subadmin/login') }}" class="main-btn">Subadmin Login</a>
                            </div>
                            <div class="button float-left">
                                <a href="{{ url('/admin/login') }}" class="main-btn">Admin Login</a>

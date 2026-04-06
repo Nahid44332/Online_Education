@@ -17,6 +17,7 @@ use App\Models\Teacher;
 use App\Models\TeacherApplication;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Yoeunes\Toastr\Facades\Toastr;
@@ -298,5 +299,48 @@ class FrontendController extends Controller
     {
         $privacyPolicy = Policy::select('payment_policy')->first();
         return view('frontend.payment-policy', compact('privacyPolicy'));
+    }
+
+
+    //Student Panel//
+    public function studentLogin()
+    {
+        return view('frontend.studentLogin');
+    }
+
+    public function loginSubmit(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        // প্রথমে লগইন অ্যাটেম্পট করা হচ্ছে
+        if (Auth::guard('student')->attempt($credentials)) {
+
+            $student = Auth::guard('student')->user();
+
+            // চেক করা হচ্ছে স্টুডেন্ট লকড কি না
+            // এখানে 'lock' হলো স্টুডেন্ট মডেলের রিলেশনশিপ নাম
+            if ($student->lock && $student->lock->is_locked) {
+
+                Auth::guard('student')->logout(); // লগইন হয়ে গেলেও তাকে বের করে দাও
+
+                return redirect()->back()->with('error', 'আপনার অ্যাকাউন্টটি লক করা হয়েছে। দয়া করে কর্তৃপক্ষের সাথে যোগাযোগ করুন।');
+            }
+
+            return redirect()->intended(route('student.dashboard'));
+        }
+
+        return back()->with('error', 'Invalid Email or Password');
+    }
+
+
+    //Subadmin Panel//
+    public function subadminLogin()
+    {
+        return view('frontend.Subadmin-login');
     }
 }

@@ -1,35 +1,35 @@
 <?php
 
-use App\Http\Controllers\adminAuthController;
-use App\Http\Controllers\backend\adminController;
-use App\Http\Controllers\backend\AdminProfileController;
-use App\Http\Controllers\backend\admitCardController;
-use App\Http\Controllers\backend\CertificateController;
-use App\Http\Controllers\backend\CourseController;
-use App\Http\Controllers\backend\ExamController;
-use App\Http\Controllers\backend\lockController;
-use App\Http\Controllers\backend\NewsController;
-use App\Http\Controllers\backend\NoticeController;
-use App\Http\Controllers\backend\PaymentController;
-use App\Http\Controllers\backend\ReportController;
-use App\Http\Controllers\backend\resultController;
-use App\Http\Controllers\backend\SettingController;
-use App\Http\Controllers\backend\StudentController;
-use App\Http\Controllers\backend\teachersController;
-use App\Http\Controllers\backend\TestimonialController;
-use App\Http\Controllers\backend\WithdrawController;
-use App\Http\Controllers\FrontendController;
-use App\Http\Controllers\ReferralController;
-use App\Models\Teacher;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+// Controllers
+use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\adminAuthController;
+use App\Http\Controllers\backend\adminController;
+use App\Http\Controllers\backend\AdminProfileController;
+use App\Http\Controllers\backend\StudentController;
+use App\Http\Controllers\backend\teachersController;
+use App\Http\Controllers\backend\CourseController;
+use App\Http\Controllers\backend\PaymentController;
+use App\Http\Controllers\backend\admitCardController;
+use App\Http\Controllers\backend\ExamController;
+use App\Http\Controllers\backend\resultController;
+use App\Http\Controllers\backend\CertificateController;
+use App\Http\Controllers\backend\ReportController;
+use App\Http\Controllers\backend\NoticeController;
+use App\Http\Controllers\backend\lockController;
+use App\Http\Controllers\backend\TestimonialController;
+use App\Http\Controllers\backend\NewsController;
+use App\Http\Controllers\backend\SettingController;
+use App\Http\Controllers\backend\WithdrawController;
+use App\Http\Controllers\ReferralController;
 
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
+/*
+|--------------------------------------------------------------------------
+| Frontend Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [FrontendController::class, 'index']);
 Route::get('/about-us', [FrontendController::class, 'aboutUs']);
 Route::get('/courses', [FrontendController::class, 'courses']);
@@ -44,206 +44,169 @@ Route::get('/admission', [FrontendController::class, 'admission']);
 Route::post('/admission/store', [FrontendController::class, 'admissionStore']);
 Route::get('/admission/print/{id}', [FrontendController::class, 'print']);
 
-// Teacher Applicate Status
-Route::get('/teacher/application/success/{application_id}', [FrontendController::class, 'teacherApplicationSuccess']) ->name('frontend.application.success');
+// Common Frontend Features (Result, Certificate, Notice)
+Route::get('/teacher/application/success/{application_id}', [FrontendController::class, 'teacherApplicationSuccess'])->name('frontend.application.success');
 Route::get('/teacher/application/status', [FrontendController::class, 'showApplicationStatusForm'])->name('teacher.application.status.form');
 Route::post('/teacher/application/status', [FrontendController::class, 'checkApplicationStatus'])->name('teacher.application.status.check');
-
-// Student Result 
 Route::get('/student-result', [FrontendController::class, 'studentResult']);
 Route::post('/student-result', [FrontendController::class, 'showResult']);
-
-// certificate check
 Route::get('/certificate/check', [FrontendController::class, 'checkForm']);
 Route::post('/certificate/check', [FrontendController::class, 'checkStatus']);
-
-// Notice
 Route::get('/notice', [FrontendController::class, 'notice']);
 Route::get('/notice/{id}', [FrontendController::class, 'show']);
 
-//Policy
+// Policy Routes
 Route::get('/privacy-policy', [FrontendController::class, 'privacyPolicy']);
 Route::get('/trams-condiotion', [FrontendController::class, 'tramsCondition']);
 Route::get('/admission-policy', [FrontendController::class, 'admissionPolicy']);
 Route::get('/payment-policy', [FrontendController::class, 'paymentPolicy']);
 
+// Student Login (Public)
+Route::get('/student/login', [FrontendController::class, 'studentLogin'])->name('student.login');
+Route::post('/student/login', [FrontendController::class, 'loginSubmit'])->name('student.login.submit');
 
-// Auth Route
-Route::get('/admin/login', [adminAuthController::class, 'adminLogin']);
-Route::get('/admin/logout', [adminAuthController::class, 'adminLogOut']);
+//Subadmin Login Route
+Route::get('/subadmin/login', [FrontendController::class, 'subadminLogin']);
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin Authentication Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/admin/login', [adminAuthController::class, 'adminLogin'])->name('admin.login');
+Route::get('/admin/logout', [adminAuthController::class, 'adminLogOut'])->name('admin.logout');
 Auth::routes(['register' => false]);
 
-Route::get('/admin/dashboard', [adminController::class, 'adminDashboard']);
+/*
+|--------------------------------------------------------------------------
+| Admin Panel Routes (Middleware Protected)
+|--------------------------------------------------------------------------
+*/
+Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
+    
+    Route::get('/dashboard', [adminController::class, 'adminDashboard'])->name('admin.dashboard');
 
-// Students
-Route::get('/admin/student/list', [adminController::class, 'studentList']);
-Route::post('/admin/student/status/{id}', [adminController::class, 'updateStatus']);
-Route::get('/admin/student/delete/{id}', [adminController::class, 'deleteStudent']);
-Route::get('/admin/student/edit/{id}', [adminController::class, 'editStudent']);
-Route::post('/admin/student/update/{id}', [adminController::class, 'updateStudent']);
+    // Students Management
+    Route::get('/student/list', [adminController::class, 'studentList']);
+    Route::post('/student/status/{id}', [adminController::class, 'updateStatus']);
+    Route::get('/student/delete/{id}', [adminController::class, 'deleteStudent']);
+    Route::get('/student/edit/{id}', [adminController::class, 'editStudent']);
+    Route::post('/student/update/{id}', [adminController::class, 'updateStudent']);
 
-//Teachers
-Route::get('/admin/teacher/add', [teachersController::class, 'addTeacher']);
-Route::post('/admin/teacher/store', [teachersController::class, 'teacherStore']);
-Route::get('/admin/teacher/list', [teachersController::class, 'teacherList']);
-Route::get('/admin/teacher/view/{id}', [teachersController::class, 'teacherView']);
-Route::get('/admin/teacher/delete/{id}', [teachersController::class, 'teacherDelete']);
-Route::get('/admin/teacher/edit/{id}', [teachersController::class, 'teacherEdit']);
-Route::post('/admin/teacher/update/{id}', [teachersController::class, 'updateTeacher']);
-Route::get('/admin/teacher/assign-course/{id}', [teachersController::class, 'assignCourse']);
-Route::post('/admin/teacher/assign-course/store', [teachersController::class, 'storeAssignCourse']);
-Route::get('/admin/teacher/featured', [teachersController::class, 'teacherFeatured']);
-Route::post('/admin/teacher/featured/update', [teachersController::class, 'teacherFeaturedUpdate']);
+    // Teachers Management
+    Route::get('/teacher/add', [teachersController::class, 'addTeacher']);
+    Route::post('/teacher/store', [teachersController::class, 'teacherStore']);
+    Route::get('/teacher/list', [teachersController::class, 'teacherList']);
+    Route::get('/teacher/view/{id}', [teachersController::class, 'teacherView']);
+    Route::get('/teacher/delete/{id}', [teachersController::class, 'teacherDelete']);
+    Route::get('/teacher/edit/{id}', [teachersController::class, 'teacherEdit']);
+    Route::post('/teacher/update/{id}', [teachersController::class, 'updateTeacher']);
+    Route::get('/teacher/assign-course/{id}', [teachersController::class, 'assignCourse']);
+    Route::post('/teacher/assign-course/store', [teachersController::class, 'storeAssignCourse']);
+    Route::get('/teacher/featured', [teachersController::class, 'teacherFeatured']);
+    Route::post('/teacher/featured/update', [teachersController::class, 'teacherFeaturedUpdate']);
+    Route::get('/teacher/cendidate', [teachersController::class, 'teacherCendidate']);
 
-//Teacher Apply
-Route::get('/admin/teacher/cendidate', [teachersController::class, 'teacherCendidate']);
-Route::get('teacher-applications/show/{id}', [teachersController::class, 'show']);
-Route::get('/teacher-applications/{id}/approve', [teachersController::class, 'approve']);
-Route::get('/teacher-applications/{id}/reject', [teachersController::class, 'reject']);
-Route::get('/teacher-applications/delete/{id}', [teachersController::class, 'deleteApplicate']);
+    // Course Management
+    Route::get('/course', [CourseController::class, 'course']);
+    Route::get('/course/create', [CourseController::class, 'courseCreate']);
+    Route::post('/course/store', [CourseController::class, 'courseStore']);
+    Route::get('/course/delete/{id}', [CourseController::class, 'courseDelete']);
+    Route::get('/course/edit/{id}', [CourseController::class, 'courseEdit']);
+    Route::post('/course/update/{id}', [CourseController::class, 'courseUpdate']);
 
-//Course
-Route::get('/admin/course', [CourseController::class, 'course']);
-Route::get('/admin/course/create', [CourseController::class, 'courseCreate']);
-Route::post('/admin/course/store', [CourseController::class, 'courseStore']);
-Route::get('/admin/course/delete/{id}', [CourseController::class, 'courseDelete']);
-Route::get('/admin/course/edit/{id}', [CourseController::class, 'courseEdit']);
-Route::post('/admin/course/update/{id}', [CourseController::class, 'courseUpdate']);
+    // Payments, Exams, Results, Certificates
+    Route::get('/payment/list', [PaymentController::class, 'paymentList']);
+    Route::get('/payments/create/{student_id}', [PaymentController::class, 'createPayment'])->name('admin.payments.create');
+    Route::post('/payments/store/{student_id}', [PaymentController::class, 'paymentStore'])->name('admin.payments.store');
+    Route::get('/student/payments/{id}', [PaymentController::class, 'getStudentPayments']);
+    Route::get('/payment/download/{id}', [PaymentController::class, 'paymentPrint']);
+    Route::get('/admit-card', [admitCardController::class, 'admitCard']);
+    Route::get('/exam', [ExamController::class, 'exam']);
+    Route::get('/exam/create', [ExamController::class, 'examCreate']);
+    Route::get('/student/result', [resultController::class, 'studentResult']);
+    Route::get('/student/certificate', [CertificateController::class, 'studentCertificate']);
 
-//Admission payment
-Route::get('/admin/payments/create/{student_id}', [PaymentController::class, 'createPayment']);
-Route::post('/admin/payments/store/{student_Id}', [PaymentController::class, 'paymentStore']);
-Route::get('/admin/payment/list', [PaymentController::class, 'paymentList']);
-Route::get('/payment/print/{id}', [PaymentController::class, 'paymentPrint']);
-Route::get('/payment/delete/{id}', [PaymentController::class, 'paymentDelete']);
-Route::get('/student/payments/{id}', [PaymentController::class, 'studentPayments']);
+    //Reports
+    Route::get('/reports', [ReportController::class, 'allReports']);
+    Route::get('/reports/students', [ReportController::class, 'studentReports']);
+    Route::get('/reports/teachers', [ReportController::class, 'teacherReports']);
+    Route::get('/reports/courses', [ReportController::class, 'courseReports']);
+    Route::get('/reports/payments', [ReportController::class, 'paymentReports']);
+    Route::get('/reports/certificates', [ReportController::class, 'certificateReports']);
 
-//contact Messege..
-Route::get('/admin/contact-us', [adminController::class, 'contactUs']);
-Route::get('/admin/contact-us/delete/{id}', [adminController::class, 'contactUsDelete']);
+    // Notices
+    Route::get('/notice', [NoticeController::class, 'Notice']);
+    Route::get('/notice/create', [NoticeController::class, 'noticeCreate']);
+    Route::post('/notice/create/store', [NoticeController::class, 'noticeStore']);
 
-//Admit Card...
-Route::get('/admin/admit-card', [admitCardController::class, 'admitCard']);
-Route::get('/admin/admit-card/create', [admitCardController::class, 'admitCardCreate']);
-Route::post('/admin/admit-card/store', [admitCardController::class, 'admitCardStore']);
-Route::get('/admin/admit-card/print-admit/{id}', [AdmitCardController::class, 'printadmit']);
-Route::get('/admin/admit-card/delete/{id}', [AdmitCardController::class, 'admitDelete']);
-Route::get('/admin/admit-card/edit/{id}', [AdmitCardController::class, 'admitEdit']);
-Route::post('/admin/admit-card/update/{id}', [AdmitCardController::class, 'admitUpdate']);
+    //Lock
+    Route::get('/lock', [lockController::class, 'studentLock']);
+    Route::get('/admin/student/lock/{id}', [lockController::class, 'lock'])->name('student.lock');
+    Route::get('/admin/student/unlock/{id}', [lockController::class, 'unlock'])->name('student.unlock');
 
-//Exam
-Route::get('/admin/exam', [ExamController::class, 'exam']);
-Route::get('/admin/exam/create', [ExamController::class, 'examCreate']);
-Route::post('/admin/exam/store', [ExamController::class, 'examStore']);
-Route::get('/admin/exam/delete/{id}', [ExamController::class, 'examDelete']);
+    //contact-us
+    Route::get('/contact-us', [adminController::class, 'contactUs']);
+    Route::get('/contact-us/delete/{id}', [adminController::class, 'contactUsDelete']);
 
-//Result...
-Route::get('/admin/student/result', [resultController::class, 'studentResult']);
-Route::get('/admin/student/result-create', [resultController::class, 'createResult']);
-Route::post('/admin/student/result/store', [resultController::class, 'storeResult']);
-Route::get('/admin/student/resule/edit/{id}', [resultController::class, 'editResult']);
-Route::post('/admin/student/resule/update/{id}', [resultController::class, 'updateResult']);
-Route::get('/admin/student/resule/delete/{id}', [resultController::class, 'deleteResult']);
+    //Testimonial
+    Route::get('/testimonial', [TestimonialController::class, 'testimonial']);
+    Route::get('/testimonial/create', [TestimonialController::class, 'testimonialCreate']);
+    Route::get('/testimonial/store', [TestimonialController::class, 'testimonialStore']);
+    Route::get('/testimonial/edit/{id}', [TestimonialController::class, 'testimonialEdit']);
+    Route::post('/testimonial/update/{id}', [TestimonialController::class, 'testimonialUpdate']);
+    Route::get('/testimonial/delete/{id}', [TestimonialController::class, 'testimonialDelete']);
 
-// Certificate...
-Route::get('/admin/student/certificate', [CertificateController::class, 'studentCertificate']);
-Route::get('/admin/student/certificate/create', [CertificateController::class, 'studentCertificateCreate']);
-Route::post('/admin/student/certificate/store', [CertificateController::class, 'certificateStore']);
-Route::get('/admin/student/certificate/{id}', [CertificateController::class, 'certificateView']);
-Route::get('/admin/student/certificate/delete/{id}', [CertificateController::class, 'certificateDelete']);
-Route::get('/admin/student/certificate/print/{id}', [CertificateController::class, 'certificatePrint']);
+    //News
+    Route::get('/news', [NewsController::class, 'news']);
+    Route::get('/news/create', [NewsController::class, 'newsCreate']);
+    Route::post('/news/store', [NewsController::class, 'newsStore']);
+    Route::post('/news/status/{id}', [NewsController::class, 'changeStatus'])->name('news.status');
 
-//Report....
-Route::get('/admin/reports', [ReportController::class, 'allReports']);
-Route::get('/admin/reports/students', [ReportController::class, 'studentReports']);
-Route::get('/admin/reports/teachers', [ReportController::class, 'teacherReports']);
-Route::get('/admin/reports/courses', [ReportController::class, 'courseReports']);
-Route::get('/admin/reports/payments', [ReportController::class, 'paymentReports']);
-Route::get('/admin/reports/certificates', [ReportController::class, 'certificateReports']);
+    //Withwraw
+    Route::get('/withdraw/list',[adminController::class,'withdrawList']);
+    Route::get('/withdraw/approve/{id}',[adminController::class, 'withdrawApprove']);
+    Route::get('/withdraw/reject/{id}',[adminController::class, 'withdrawReject']);
 
-// Notice
-Route::get('/admin/notice', [NoticeController::class, 'Notice']);
-Route::get('/admin/notice/create', [NoticeController::class, 'noticeCreate']);
-Route::post('/admin/notice/store', [NoticeController::class, 'noticeStore']);
-Route::post('/admin/notice/toggle-status/{id}', [NoticeController::class, 'toggleStatus']);
-Route::get('/admin/notice/delete/{id}', [NoticeController::class, 'noticeDelete']);
-Route::get('/admin/notice/edit/{id}', [NoticeController::class, 'noticeEdit']);
-Route::post('/admin/notice/update/{id}', [NoticeController::class, 'noticeUpdate']);
+    // Settings & Profile
+    Route::get('/profile', [AdminProfileController::class, 'profile']);
+    Route::get('/site-seeting', [SettingController::class, 'siteSetting']);
+    Route::get('/policy-seeting', [SettingController::class, 'policySetting']);
+    Route::post('/policy-seeting/update', [SettingController::class, 'policySettingStore']);
+    Route::get('/about-us', [SettingController::class, 'aboutUs']);
+    Route::post('/about-us/update/{id}', [SettingController::class, 'aboutUsUpdate']);
+    Route::get('/banner-settings', [SettingController::class, 'bannerSetting']);
+    Route::get('/edit-banner/{id}', [SettingController::class, 'editBanner']);
+    Route::post('/update-banner/{id}', [SettingController::class, 'updateBanner']);
+});
 
-//Lock
-Route::get('/admin/lock', [lockController::class, 'studentLock']);
-Route::get('/admin/student-lock/{id}/lock', [lockController::class, 'lock'])->name('student.lock');
-Route::get('/admin/student-lock/{id}/unlock', [lockController::class, 'unlock'])->name('student.unlock');
 
-// Testimonial
-Route::get('/admin/testimonial', [TestimonialController::class, 'testimonial']);
-Route::get('/admin/testimonial/create', [TestimonialController::class, 'testimonialCreate']);
-Route::post('/admin/testimonial/store', [TestimonialController::class, 'testimonialStore']);
-Route::get('/admin/testimonial/delete/{id}', [TestimonialController::class, 'testimonialDelete']);
-Route::get('/admin/testimonial/edit/{id}', [TestimonialController::class, 'testimonialEdit']);
-Route::post('/admin/testimonial/update/{id}', [TestimonialController::class, 'testimonialUpdate']);
+/*
+|--------------------------------------------------------------------------
+| Student Routes
+|--------------------------------------------------------------------------
+*/
 
-//News
-Route::get('/admin/news', [NewsController::class, 'news']);
-Route::get('/admin/news/create', [NewsController::class, 'newsCreate']);
-Route::post('/admin/news/store', [NewsController::class, 'newsStore']);
-Route::post('/admin/news/status/{id}', [NewsController::class, 'changeStatus'])->name('news.status');
-Route::get('/admin/news/edit/{id}', [NewsController::class, 'newsEdit']);
-Route::post('/admin/news/update/{id}', [NewsController::class, 'newsUpdate']);
-Route::get('/admin/news/delete/{id}', [NewsController::class, 'newsDelete']);
 
-//About Us
-Route::get('/admin/about-us', [SettingController::class, 'aboutUs']);
-Route::post('/admin/about-us/update/{id}', [SettingController::class, 'aboutUsUpdate']);
+// Student Dashboard & Panel (Protected by Student Guard)
+Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function () {
+    
+    Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
+    Route::post('/logout', [StudentController::class, 'logout'])->name('student.logout');
+    
+    // Profile
+    Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
+    Route::get('/profile/edit', [StudentController::class, 'profileEdit'])->name('student.profile.edit');
+    Route::post('/profile/update', [StudentController::class, 'profileUpdate'])->name('student.profile.update');
+    Route::post('/password/update', [StudentController::class, 'passwordUpdate'])->name('student.password.update');
 
-//Site Setting
-Route::get('/admin/site-seeting', [SettingController::class, 'siteSetting']);
-Route::post('/admin/site-seeting/update', [SettingController::class, 'siteSettingUpdate']);
+    // Referral & Withdraw
+    Route::get('/referral', [ReferralController::class, 'referral'])->name('student.referral');
+    Route::get('/referral-history', [ReferralController::class, 'referralHistroy'])->name('student.referral-histroy');
+    Route::get('/withdraw', [WithdrawController::class, 'withdrawPage'])->name('student.withdraw.page');
+    Route::post('/withdraw', [WithdrawController::class, 'withdrawRequest'])->name('student.withdraw');
 
-//Policy
-Route::get('/admin/policy-seeting', [SettingController::class, 'policySetting']);
-Route::post('/admin/policy-seeting/update', [SettingController::class, 'policySettingStore']);
-
-//Banners
-Route::get('/admin/banner-settings', [SettingController::class, 'bannerSetting']);
-Route::get('/admin/edit-banner/{id}', [SettingController::class, 'editBanner']);
-Route::post('/admin/update-banner/{id}', [SettingController::class, 'updateBanner']);
-
-//Admin Profile
-Route::get('/admin/profile', [AdminProfileController::class, 'profile']);
-Route::post('admin/profile/update', [AdminProfileController::class, 'profileUpdate']);
-
-// Admin Password
-Route::get('/admin/change-password', [AdminProfileController::class, 'changePassword']);
-Route::post('/admin/change-password', [AdminProfileController::class, 'updatePassword']);
-
-//admin Withdraw Route...
-Route::get('/admin/withdraw/list',[adminController::class,'withdrawList']);
-Route::get('/admin/withdraw/approve/{id}',[adminController::class,'withdrawApprove']);
-Route::get('/admin/withdraw/reject/{id}',[adminController::class,'withdrawReject']);
-
-//Student Login Route...
-Route::get('/Student/login', [StudentController::class, 'studentLogin']);
-Route::post('/student/login', [StudentController::class,'loginSubmit'])->name('student.login.submit');
-// Dashboard (Middleware Protected)
-Route::get('/student/dashboard', [StudentController::class,'dashboard'])
-     ->name('student.dashboard')
-     ->middleware('auth:student');
-Route::post('/student/logout', [StudentController::class, 'logout'])->name('student.logout');
-
-//student Profile Route...
-Route::get('/student/profile', [StudentController::class,'profile'])->name('student.profile');
-Route::get('/student/profile/edit', [StudentController::class,'profileEdit'])->name('student.profile.edit');
-Route::post('/student/profile/update', [StudentController::class,'profileUpdate'])->name('student.profile.update');
-Route::post('/student/password/update',[StudentController::class,'passwordUpdate'])->name('student.password.update');
-
-//Referral Route...
-Route::get('/student/referral', [ReferralController::class,'referral'])->name('student.referral')->middleware('student.auth');
-Route::get('/student/referral-history', [ReferralController::class,'referralHistroy'])->name('student.referral-histroy')->middleware('student.auth');
-
-// Student withdraw Route...
-Route::get('/student/withdraw',[WithdrawController::class,'withdrawPage'])->name('student.withdraw.page')->middleware('student.auth');
-Route::post('/student/withdraw',[WithdrawController::class,'withdrawRequest'])->name('student.withdraw')->middleware('student.auth');
-
-//Student Course Route...
-Route::get('/student/course', [StudentController::class, 'Course'])->name('student.course')->middleware('student.auth');
+    // Academic
+    Route::get('/course', [StudentController::class, 'Course'])->name('student.course');
+});

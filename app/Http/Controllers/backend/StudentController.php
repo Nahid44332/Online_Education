@@ -17,28 +17,7 @@ class StudentController extends Controller
     {
         $this->middleware('auth');
     }
-    
-    public function studentLogin()
-    {
-        return view('frontend.studentLogin');
-    }
 
-    public function loginSubmit(Request $request)
-    {
-
-        $request->validate([
-            'email' => 'required',
-            'password' => 'required',
-        ]);
-
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::guard('student')->attempt($credentials)) {
-            return redirect()->intended(route('student.dashboard'));
-        }
-
-        return back()->with('error', 'Invalid Email or Password');
-    }
 
     public function dashboard()
     {
@@ -50,7 +29,7 @@ class StudentController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('student')->logout();
-        return redirect('/Student/login');
+        return redirect('/student/login');
     }
 
     public function profile()

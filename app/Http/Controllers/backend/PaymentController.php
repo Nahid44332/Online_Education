@@ -68,7 +68,7 @@ class PaymentController extends Controller
         return redirect()->back();
     }
 
-    public function studentPayments($id)
+    public function getStudentPayments($id)
 {
     $student = Student::with('payments.course')->findOrFail($id);
 
