@@ -4,6 +4,7 @@ namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\LiveClass;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -90,7 +91,8 @@ class StudentController extends Controller
 
     // Fetch course with teacher relation
     $course = \App\Models\Course::with('teacher')->find($student->course_id);
+    $liveclass = LiveClass::first();
 
-    return view('backend.student-panel.course.course', compact('student', 'course'));
+    return view('backend.student-panel.course.course', compact('student', 'course', 'liveclass'));
 }
 }

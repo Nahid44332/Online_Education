@@ -22,6 +22,7 @@ use App\Http\Controllers\backend\lockController;
 use App\Http\Controllers\backend\TestimonialController;
 use App\Http\Controllers\backend\NewsController;
 use App\Http\Controllers\backend\SettingController;
+use App\Http\Controllers\backend\teacher\TeacherPanelController;
 use App\Http\Controllers\backend\WithdrawController;
 use App\Http\Controllers\ReferralController;
 
@@ -67,6 +68,8 @@ Route::post('/student/login', [FrontendController::class, 'loginSubmit'])->name(
 
 //Subadmin Login Route
 Route::get('/subadmin/login', [FrontendController::class, 'subadminLogin']);
+Route::post('/subadmin/login/submit', [FrontendController::class, 'subadminLoginSubmit'])->name('subadmin.login.submit');
+Route::get('/subadmin/logout', [FrontendController::class, 'subadminLogout'])->name('subadmin.logout');
 
 
 /*
@@ -209,4 +212,26 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
 
     // Academic
     Route::get('/course', [StudentController::class, 'Course'])->name('student.course');
+});
+
+
+// ===============================
+//Subadmin Route Group.......
+Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function () {
+
+    // শুধুমাত্র টিচারদের জন্য রাউট
+    Route::group(['middleware' => 'subadmin.role:teacher'], function () {
+        Route::get('/teacher/dashboard', [TeacherPanelController::class, 'teacherDashboard'])->name('teacher.dashboard');
+        Route::get('/teacher/live-class', [TeacherPanelController::class, 'liveClass'])->name('teacher.live-class');
+        Route::post('/live-class/store', [TeacherPanelController::class, 'store'])->name('live.class.store');
+        Route::get('/live-class/delete/{id}', [TeacherPanelController::class, 'destroy'])->name('live.class.delete');
+        Route::get('/live-class/status/{id}', [TeacherPanelController::class, 'toggleStatus'])->name('live.class.status');
+        // টিচারের অন্য সব রাউট এখানে দাও
+    });
+
+    // // শুধুমাত্র ম্যানেজারদের জন্য রাউট
+    // Route::group(['middleware' => 'subadmin.role:manager'], function () {
+    //     Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
+    //     // ম্যানেজারের অন্য সব রাউট এখানে দাও
+    // });
 });

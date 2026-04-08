@@ -18,6 +18,12 @@ return [
             'driver' => 'session',
             'provider' => 'students',
         ],
+
+        // Subadmin Guard
+        'subadmin' => [
+            'driver' => 'session',
+            'provider' => 'subadmins',
+        ],
     ],
 
     'providers' => [
@@ -30,6 +36,12 @@ return [
         'students' => [
             'driver' => 'eloquent',
             'model' => App\Models\Student::class,
+        ],
+
+        // Subadmin Provider
+        'subadmins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Subadmin::class,
         ],
     ],
 

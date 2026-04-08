@@ -221,7 +221,7 @@ class FrontendController extends Controller
         $student->permanent_address = $request->permanent_address;
         $student->save();
 
-        return redirect('/Student/login');
+        return redirect('/student/login');
     }
 
     public function print($id)
@@ -342,5 +342,53 @@ class FrontendController extends Controller
     public function subadminLogin()
     {
         return view('frontend.Subadmin-login');
+    }
+
+    public function subadminLoginSubmit(Request $request)
+{
+    // ১. ভ্যালিডেশন (এখানে 'position' যোগ করা হয়েছে)
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+        'position' => 'required', // লগইন ফর্মে পজিশন ফিল্ডের name যদি 'position' হয়
+    ]);
+
+    // শুধু ইমেইল এবং পাসওয়ার্ড দিয়ে লগইন ট্রাই করা
+    $credentials = $request->only('email', 'password');
+
+    if (Auth::guard('subadmin')->attempt($credentials)) {
+        $user = Auth::guard('subadmin')->user();
+
+        // ২. ফর্মের পজিশন আর ডাটাবেসের পজিশন চেক করা
+        // যদি ডাটাবেসের পজিশন আর ইউজার সিলেক্ট করা পজিশন না মিলে
+        if ($user->position !== $request->position) {
+            Auth::guard('subadmin')->logout(); // লগইন হয়ে গেলে বের করে দেওয়া
+            return back()->with('error', 'আপনার সিলেক্ট করা পজিশনটি সঠিক নয়।');
+        }
+
+        // ৩. স্ট্যাটাস চেক
+        if ($user->status == 0) {
+            Auth::guard('subadmin')->logout();
+            return back()->with('error', 'আপনার অ্যাকাউন্টটি বর্তমানে বন্ধ আছে।');
+        }
+
+        // ৪. পজিশন অনুযায়ী রিডাইরেক্ট
+        if ($user->position == 'teacher') {
+            toastr()->success('স্বাগতম টিচার প্যানেলে');
+            return redirect()->route('teacher.dashboard');
+        } elseif ($user->position == 'manager') {
+            return redirect()->route('manager.dashboard');
+        }
+
+        return redirect()->intended('/panel/dashboard');
+    }
+
+    // লগইন ব্যর্থ হলে
+    return back()->with('error', 'ইমেইল বা পাসওয়ার্ড সঠিক নয়।');
+}
+    public function subadminLogout()
+    {
+        Auth::guard('subadmin')->logout();
+        return redirect('/subadmin/login');
     }
 }

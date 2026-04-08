@@ -5,12 +5,15 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Featured;
+use App\Models\Subadmin;
 use App\Models\Teacher;
 use App\Models\TeacherApplication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Yoeunes\Toastr\Facades\Toastr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
+
 
 class teachersController extends Controller
 {
@@ -24,35 +27,43 @@ class teachersController extends Controller
         return view('backend.teacher.add-teacher');
     }
 
-    public function teacherStore(Request $request)
-    {
-        // --- Student Data Save ---
-        $teacher = new Teacher();
+public function teacherStore(Request $request)
+{
+    // ১. প্রথমে সাব-অ্যাডমিন (লগইন ডাটা) সেভ করা
+    $subadmin = new Subadmin();
+    $subadmin->name = $request->name;
+    $subadmin->email = $request->email; // ফর্ম থেকে আসা ইমেইল
+    $subadmin->password = Hash::make($request->password); // পাসওয়ার্ড হ্যাশ করা
+    $subadmin->position = $request->position; // teacher, trainer ইত্যাদি
+    $subadmin->save();
 
-        $teacher->name = $request->name;
-        $teacher->designation = $request->designation;
-        $teacher->phone = $request->phone;
-        $teacher->about = $request->about;
-        $teacher->achievements = $request->achievements;
-        $teacher->objective = $request->objective;
-        $teacher->short_description = $request->short_description;
-        $teacher->facebook_link = $request->facebook_link;
-        $teacher->twitter_link = $request->twitter_link;
-        $teacher->google_link = $request->google_link;
-        $teacher->linkedin_link = $request->linkedin_link;
+    // ২. এবার টিচার প্রোফাইল ডাটা সেভ করা
+    $teacher = new Teacher();
+    $teacher->subadmin_id = $subadmin->id; // এই যে এখান থেকে রিলেশন আইডি কানেক্ট হলো
+    $teacher->name = $request->name;
+    $teacher->designation = $request->designation;
+    $teacher->phone = $request->phone;
+    $teacher->about = $request->about;
+    $teacher->achievements = $request->achievements;
+    $teacher->objective = $request->objective;
+    $teacher->short_description = $request->short_description;
+    $teacher->facebook_link = $request->facebook_link;
+    $teacher->twitter_link = $request->twitter_link;
+    $teacher->google_link = $request->google_link;
+    $teacher->linkedin_link = $request->linkedin_link;
 
-        // --- Image Upload ---
-        if (isset($request->profile_image)) {
-            $imageName = rand() . '-teacher' . '.' . $request->profile_image->extension(); //12345-teacher-.webp
-            $request->profile_image->move('backend/images/teachers/', $imageName);
-
-            $teacher->profile_image = $imageName;
-        }
-
-        $teacher->save();
-        toastr()->success('You have been Ragistered Successfully!');
-        return redirect()->back();
+    // --- Image Upload ---
+    if (isset($request->profile_image)) {
+        $imageName = rand() . '-teacher' . '.' . $request->profile_image->extension();
+        $request->profile_image->move('backend/images/teachers/', $imageName);
+        $teacher->profile_image = $imageName;
     }
+
+    $teacher->save();
+
+    toastr()->success('Teacher Account Created Successfully!');
+    return redirect()->back();
+}
 
     public function teacherList()
     {
