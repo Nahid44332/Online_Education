@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 
 class StudentController extends Controller
 {
-     public function __construct()
+    public function __construct()
     {
         $this->middleware('auth');
     }
@@ -85,14 +85,22 @@ class StudentController extends Controller
         return back()->with('success', 'Password Updated Successfully');
     }
 
-   public function Course()
-{
-    $student = Auth::guard('student')->user();
+    public function Course()
+    {
+        $student = Auth::guard('student')->user();
 
-    // Fetch course with teacher relation
-    $course = \App\Models\Course::with('teacher')->find($student->course_id);
-    $liveclass = LiveClass::first();
+        // ১. স্টুডেন্টের কোর্সের তথ্য রিলেশনসহ নিয়ে আসুন
+        $course = \App\Models\Course::with('teacher')->find($student->course_id);
 
-    return view('backend.student-panel.course.course', compact('student', 'course', 'liveclass'));
-}
+        // ২. লাইভ ক্লাস ফিল্টার করার সময় অবশ্যই $course->id ব্যবহার করতে হবে
+        $liveclass = null;
+        if ($course) {
+            $liveclass = LiveClass::where('course_id', $course->id) // এখানে ভুল ছিল
+                ->where('status', 'active')
+                ->latest()
+                ->first();
+        }
+
+        return view('backend.student-panel.course.course', compact('student', 'course', 'liveclass'));
+    }
 }

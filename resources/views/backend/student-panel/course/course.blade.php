@@ -14,6 +14,7 @@
                     <h5 class="card-title">{{ $course->title }}</h5>
 
                     <p class="card-text"><strong>Teacher:</strong> {{ $course->teacher->name ?? 'N/A' }}</p>
+                    <p class="card-text"><strong>Topic:</strong> {{ $liveclass->title ?? 'N/A' }}</p>
 
                     @if ($liveclass && $liveclass->status == 'active')
                         <a href="{{ $liveclass->meeting_link }}" target="_blank" class="btn btn-success btn-sm">

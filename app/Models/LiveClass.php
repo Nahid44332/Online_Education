@@ -11,9 +11,17 @@ class LiveClass extends Model
 
     protected $guarded = [];
 
+   // এই অংশটুকু নিশ্চিত করুন
     protected $fillable = [
-        'title',
-        'meeting_link',
-        'status', // যদি স্ট্যাটাস কলাম থাকে
+        'course_id', 
+        'title', 
+        'meeting_link', 
+        'status'
     ];
+    
+    // রিলেশনশিপ (যদি না থাকে যোগ করে নিন)
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
 }

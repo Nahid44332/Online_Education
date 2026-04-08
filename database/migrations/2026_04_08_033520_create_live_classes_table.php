@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('live_classes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
             $table->string('title'); // ক্লাসের নাম
             $table->text('meeting_link'); // গুগল মিট লিঙ্ক
             $table->string('status')->default('active'); // active/expired

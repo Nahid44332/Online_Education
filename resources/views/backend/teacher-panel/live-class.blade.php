@@ -23,6 +23,15 @@
                             <label for="title">Class Title</label>
                             <input type="text" name="title" class="form-control" id="title" placeholder="e.g. PHP Laravel Class 01" required>
                         </div>
+                       <div class="form-group">
+    @if($course)
+        <input type="hidden" name="course_id" value="{{ $course->id }}">
+    @else
+        <div class="alert alert-warning">
+            আপনার নামে কোনো কোর্স পাওয়া যায়নি। দয়া করে এডমিনের সাথে যোগাযোগ করুন।
+        </div>
+    @endif
+</div>
                         <div class="form-group">
                             <label for="link">Google Meet / Zoom Link</label>
                             <input type="url" name="meeting_link" class="form-control" id="link" placeholder="https://meet.google.com/xxx-xxxx-xxx" required>

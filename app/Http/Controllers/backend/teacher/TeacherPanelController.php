@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\backend\teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\LiveClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,28 +22,45 @@ class TeacherPanelController extends Controller
     }
 
     public function liveClass()
-    {
-        $classes = LiveClass::latest()->get();
-        return view('backend.teacher-panel.live-class', compact('classes'));
+{
+    $subadmin = Auth::guard('subadmin')->user();
+
+    // subadmins (id 6) -> teachers (subadmin_id 6, id 2)
+    $teacherProfile = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+    if ($teacherProfile) {
+        // teachers (id 2) -> courses (teacher_id 2)
+        $course = \App\Models\Course::where('teacher_id', $teacherProfile->id)->first();
+    } else {
+        $course = null;
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required',
-            'meeting_link' => 'required|url',
-        ]);
+    // শুধুমাত্র এই কোর্সের জন্য লাইভ ক্লাসগুলো আনুন
+    $classes = $course ? LiveClass::where('course_id', $course->id)->latest()->get() : collect();
 
-        // আগের সব লিঙ্ক মুছে ফেলে শুধু লেটেস্ট একটি রাখার জন্য
-        LiveClass::truncate();
+    return view('backend.teacher-panel.live-class', compact('classes', 'course'));
+}
 
-        LiveClass::create([
-            'title' => $request->title,
+public function store(Request $request)
+{
+    $request->validate([
+        'course_id'    => 'required|exists:courses,id', 
+        'title'        => 'required',
+        'meeting_link' => 'required|url',
+    ]);
+
+    // নির্দিষ্ট কোর্সের জন্য লিঙ্ক আপডেট বা তৈরি করুন
+    LiveClass::updateOrCreate(
+        ['course_id' => $request->course_id], 
+        [
+            'title'        => $request->title,
             'meeting_link' => $request->meeting_link,
-        ]);
+            'status'       => 'active',
+        ]
+    );
 
-        return back()->with('success', 'Live Class link updated successfully!');
-    }
+    return back()->with('success', 'Live Class link updated successfully for this course!');
+}
 
     public function destroy($id)
     {

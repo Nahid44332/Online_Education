@@ -11,7 +11,7 @@ class Course extends Model
 
     protected $guarded = [];
 
-     public function teacher()
+    public function teacher()
     {
         return $this->belongsTo(Teacher::class, 'teacher_id', 'id');
     }
@@ -26,4 +26,8 @@ class Course extends Model
         return $this->hasMany(Payment::class, 'course_id', 'id');
     }
 
+    public function liveClass()
+    {
+        return $this->hasOne(LiveClass::class);
+    }
 }
