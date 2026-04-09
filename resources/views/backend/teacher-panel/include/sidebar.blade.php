@@ -33,7 +33,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('stdent.list')}}">
                 <span class="menu-title">My Students</span>
                 <i class="mdi mdi-account-group menu-icon"></i>
             </a>

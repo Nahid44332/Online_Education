@@ -238,4 +238,75 @@ class adminController extends Controller
 
         return back()->with('error', 'Withdraw rejected');
     }
+
+    public function addPoints(Request $request)
+    {
+        $request->validate([
+            'teacher_id' => 'required|exists:teachers,id',
+            'points'     => 'required|integer|min:1',
+        ]);
+
+        $teacher = \App\Models\Teacher::find($request->teacher_id);
+
+        // আগের পয়েন্টের সাথে নতুন পয়েন্ট যোগ (Increment)
+        $teacher->points += $request->points;
+        $teacher->save();
+
+        return back()->with('success', 'Point Added Successfully.');
+    }
+
+    public function withdrawRequests()
+    {
+        // শুধুমাত্র টিচারদের উইথড্র রিকোয়েস্টগুলো আনা
+        // এখানে eager loading (with) ব্যবহার করা হয়েছে যাতে টিচারের নাম পাওয়া যায়
+        $withdrawals = \App\Models\Withdrawal::with('teacher.subadmin')
+            ->whereHas('teacher') // নিশ্চিত করা হচ্ছে যেন ডাটা শুধু টিচারদের হয়
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('backend.subadmin-withdraw.teacher-withdraw', compact('withdrawals'));
+    }
+
+
+    public function approveWithdraw($id)
+    {
+        // ১. উইথড্র রিকোয়েস্টটি খুঁজে বের করা
+        $withdrawal = \App\Models\Withdrawal::findOrFail($id);
+
+        // ২. শুধুমাত্র পেন্ডিং রিকোয়েস্টই এপ্রুভ করা যাবে
+        if ($withdrawal->status == 'pending') {
+            $teacher = \App\Models\Teacher::find($withdrawal->teacher_id);
+
+            // ৩. চেক করা টিচারের পর্যাপ্ত পয়েন্ট আছে কিনা
+            if ($teacher && $teacher->points >= $withdrawal->amount) {
+
+                // ৪. টিচারের পয়েন্ট কমিয়ে দেওয়া
+                $teacher->points -= $withdrawal->amount;
+                $teacher->save();
+
+                // ৫. উইথড্র স্ট্যাটাস আপডেট করা
+                $withdrawal->status = 'approved';
+                $withdrawal->save();
+
+                return back()->with('success', 'রিকোয়েস্ট এপ্রুভ হয়েছে এবং পয়েন্ট কেটে নেওয়া হয়েছে।');
+            } else {
+                return back()->with('error', 'টিচারের পর্যাপ্ত পয়েন্ট নেই বা টিচার প্রোফাইল পাওয়া যায়নি!');
+            }
+        }
+
+        return back()->with('info', 'এই রিকোয়েস্টটি আগেই প্রসেস করা হয়েছে।');
+    }
+    public function rejectWithdraw($id)
+    {
+        $withdrawal = \App\Models\Withdrawal::findOrFail($id);
+
+        if ($withdrawal->status == 'pending') {
+            $withdrawal->status = 'rejected';
+            $withdrawal->save();
+
+            return back()->with('error', 'উইথড্র রিকোয়েস্টটি রিজেক্ট করা হয়েছে।');
+        }
+
+        return back()->with('info', 'এই রিকোয়েস্টটি আগেই প্রসেস করা হয়েছে।');
+    }
 }

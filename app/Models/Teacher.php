@@ -14,7 +14,8 @@ class Teacher extends Model
     protected $fillable = [
         'subadmin_id', 'name', 'designation', 'phone', 'profile_image', 
         'about', 'achievements', 'objective', 'facebook_link', 
-        'twitter_link', 'google_link', 'linkedin_link', 'short_description'
+        'twitter_link', 'google_link', 'linkedin_link', 'short_description',
+        'points',
     ];
 
     // রিলেশনশিপ: এই প্রোফাইলটি কোন সাব-অ্যাডমিনের তা জানার জন্য
@@ -27,4 +28,11 @@ class Teacher extends Model
     {
         return $this->hasMany(Course::class, 'teacher_id', 'id');
     }
+
+    public function subadmin()
+{
+    // টিচার টেবিলের 'subadmin_id' এর সাথে 'subadmins' টেবিলের 'id' এর সম্পর্ক
+    return $this->belongsTo(Subadmin::class, 'subadmin_id', 'id');
 }
+}
+

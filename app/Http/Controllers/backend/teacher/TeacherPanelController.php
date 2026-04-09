@@ -17,50 +17,66 @@ class TeacherPanelController extends Controller
 
     public function teacherDashboard()
     {
-        $teacher = Auth::guard('subadmin')->user();
-        return view('backend.teacher-panel.dashboard', compact('teacher'));
+        $subadmin = Auth::guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+        // ১. ব্যালেন্স
+        $totalBalance = $teacher->points ?? 0;
+
+        // ২. কোর্স লিস্ট ও টোটাল কোর্স
+        $courses = \App\Models\Course::where('teacher_id', $teacher->id)->get();
+        $totalCourses = $courses->count();
+
+        // ৩. টোটাল স্টুডেন্ট কাউন্ট (রিলেশন ব্যবহার করে)
+        $totalStudents = 0;
+        foreach ($courses as $course) {
+            // আপনি studentList-এ যেভাবে $course->students ব্যবহার করেছেন, এখানেও তাই
+            $totalStudents += $course->students()->count();
+        }
+
+        return view('backend.teacher-panel.dashboard', compact('teacher', 'totalBalance', 'totalCourses', 'totalStudents'));
     }
 
     public function liveClass()
-{
-    $subadmin = Auth::guard('subadmin')->user();
+    {
+        $subadmin = Auth::guard('subadmin')->user();
 
-    // subadmins (id 6) -> teachers (subadmin_id 6, id 2)
-    $teacherProfile = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+        // subadmins (id 6) -> teachers (subadmin_id 6, id 2)
+        $teacherProfile = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
 
-    if ($teacherProfile) {
-        // teachers (id 2) -> courses (teacher_id 2)
-        $course = \App\Models\Course::where('teacher_id', $teacherProfile->id)->first();
-    } else {
-        $course = null;
+        if ($teacherProfile) {
+            // teachers (id 2) -> courses (teacher_id 2)
+            $course = \App\Models\Course::where('teacher_id', $teacherProfile->id)->first();
+        } else {
+            $course = null;
+        }
+
+        // শুধুমাত্র এই কোর্সের জন্য লাইভ ক্লাসগুলো আনুন
+        $classes = $course ? LiveClass::where('course_id', $course->id)->latest()->get() : collect();
+
+        return view('backend.teacher-panel.live-class', compact('classes', 'course'));
     }
 
-    // শুধুমাত্র এই কোর্সের জন্য লাইভ ক্লাসগুলো আনুন
-    $classes = $course ? LiveClass::where('course_id', $course->id)->latest()->get() : collect();
+    public function store(Request $request)
+    {
+        $request->validate([
+            'course_id'    => 'required|exists:courses,id',
+            'title'        => 'required',
+            'meeting_link' => 'required|url',
+        ]);
 
-    return view('backend.teacher-panel.live-class', compact('classes', 'course'));
-}
+        // নির্দিষ্ট কোর্সের জন্য লিঙ্ক আপডেট বা তৈরি করুন
+        LiveClass::updateOrCreate(
+            ['course_id' => $request->course_id],
+            [
+                'title'        => $request->title,
+                'meeting_link' => $request->meeting_link,
+                'status'       => 'active',
+            ]
+        );
 
-public function store(Request $request)
-{
-    $request->validate([
-        'course_id'    => 'required|exists:courses,id', 
-        'title'        => 'required',
-        'meeting_link' => 'required|url',
-    ]);
-
-    // নির্দিষ্ট কোর্সের জন্য লিঙ্ক আপডেট বা তৈরি করুন
-    LiveClass::updateOrCreate(
-        ['course_id' => $request->course_id], 
-        [
-            'title'        => $request->title,
-            'meeting_link' => $request->meeting_link,
-            'status'       => 'active',
-        ]
-    );
-
-    return back()->with('success', 'Live Class link updated successfully for this course!');
-}
+        return back()->with('success', 'Live Class link updated successfully for this course!');
+    }
 
     public function destroy($id)
     {
@@ -77,5 +93,52 @@ public function store(Request $request)
         $class->save();
 
         return back()->with('success', 'Class status updated successfully!');
+    }
+
+    // TeacherPanelController.php এ স্টুডেন্ট লিস্ট আনা
+    public function studentList()
+    {
+        $subadmin = Auth::guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+        $course = \App\Models\Course::where('teacher_id', $teacher->id)->first();
+
+        // যদি রিলেশন মডেলে সেট করা থাকে (Many-to-Many)
+        $students = $course->students;
+
+        return view('backend.teacher-panel.student-list', compact('students'));
+    }
+
+   public function withdraw()
+{
+    $subadmin = Auth::guard('subadmin')->user();
+    $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+    // এই টিচারের সব উইথড্র রিকোয়েস্ট লেটেস্ট অনুযায়ী আনা
+    $withdrawals = \App\Models\Withdrawal::where('teacher_id', $teacher->id)
+                    ->orderBy('id', 'desc')
+                    ->get();
+
+    return view('backend.teacher-panel.withdraw', compact('teacher', 'withdrawals'));
+}
+
+    public function withdrawStore(Request $request)
+    {
+        $subadmin = Auth::guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+        // ভ্যালিডেশন: ব্যালেন্সের বেশি টাকা তুলতে পারবে না
+        if ($request->amount > $teacher->points) {
+            return back()->with('error', 'আপনার পর্যাপ্ত ব্যালেন্স নেই!');
+        }
+
+        \App\Models\Withdrawal::create([
+            'teacher_id' => $teacher->id,
+            'amount' => $request->amount,
+            'method' => $request->method,
+            'account_details' => $request->account_details,
+            'status' => 'pending'
+        ]);
+
+        return back()->with('success', 'আপনার উইথড্র রিকোয়েস্টটি পেন্ডিং আছে।');
     }
 }

@@ -182,6 +182,14 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/banner-settings', [SettingController::class, 'bannerSetting']);
     Route::get('/edit-banner/{id}', [SettingController::class, 'editBanner']);
     Route::post('/update-banner/{id}', [SettingController::class, 'updateBanner']);
+
+    //Add Points Routes...
+    Route::post('/admin/add-points', [adminController::class, 'addPoints'])->name('admin.add.points');
+
+    //withdraw....
+    Route::get('/teacher-withdraw-requests', [adminController::class, 'withdrawRequests'])->name('admin.withdraw.requests');
+    Route::post('/withdraw-approve/{id}', [adminController::class, 'approveWithdraw'])->name('admin.withdraw.approve');
+    Route::post('/withdraw-reject/{id}', [App\Http\Controllers\backend\adminController::class, 'rejectWithdraw'])->name('admin.withdraw.reject');
 });
 
 
@@ -226,6 +234,9 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/live-class/store', [TeacherPanelController::class, 'store'])->name('live.class.store');
         Route::get('/live-class/delete/{id}', [TeacherPanelController::class, 'destroy'])->name('live.class.delete');
         Route::get('/live-class/status/{id}', [TeacherPanelController::class, 'toggleStatus'])->name('live.class.status');
+        Route::get('/teacher/student-list', [TeacherPanelController::class, 'studentList'])->name('stdent.list');
+        Route::get('/withdraw', [TeacherPanelController::class, 'withdraw'])->name('teacher.withdraw');
+        Route::post('/withdraw-request', [TeacherPanelController::class, 'withdrawStore'])->name('teacher.withdraw.store');
         // টিচারের অন্য সব রাউট এখানে দাও
     });
 

@@ -1,13 +1,13 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="{{url('/admin/profile')}}" class="nav-link">
+            <a href="{{ url('/admin/profile') }}" class="nav-link">
                 <div class="nav-profile-image">
-                    <img src="{{ asset('backend/images/admin/'.$admin->image) }}" alt="profile" />
+                    <img src="{{ asset('backend/images/admin/' . $admin->image) }}" alt="profile" />
                     <span class="login-status online"></span>
                 </div>
                 <div class="nav-profile-text d-flex flex-column">
-                    <span class="font-weight-bold mb-2">{{$admin->name}}</span>
+                    <span class="font-weight-bold mb-2">{{ $admin->name }}</span>
                     <span class="text-secondary text-small">Web Developer</span>
                 </div>
                 <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
@@ -56,10 +56,10 @@
                         <a class="nav-link" href="{{ url('/admin/teacher/add') }}">Add Teacher</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url('/admin/teacher/cendidate')}}">Teacher Cendidate</a>
+                        <a class="nav-link" href="{{ url('/admin/teacher/cendidate') }}">Teacher Cendidate</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url('/admin/teacher/featured')}}">Featured Teachers</a>
+                        <a class="nav-link" href="{{ url('/admin/teacher/featured') }}">Featured Teachers</a>
                     </li>
                 </ul>
             </div>
@@ -83,10 +83,32 @@
 
         <!-- Admit Card -->
         <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/withdraw/list')}}">
+            <a class="nav-link" href="{{ url('/admin/withdraw/list') }}">
                 <span class="menu-title">Withdraw</span>
                 <i class="mdi mdi-cash menu-icon"></i>
             </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#sub-admin-withdraw" aria-expanded="false"
+                aria-controls="sub-admin-withdraw">
+                <span class="menu-title">Sub-Admin Withdraw</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-cash-multiple menu-icon"></i>
+            </a>
+            <div class="collapse" id="sub-admin-withdraw">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Trainer Withdraw</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Team Leader Withdraw</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.withdraw.requests') }}">Teacher Withdraw</a>
+                    </li>
+                </ul>
+            </div>
         </li>
 
         <!-- Admit Card -->
@@ -175,7 +197,7 @@
 
         <!-- Lock -->
         <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/lock')}}">
+            <a class="nav-link" href="{{ url('/admin/lock') }}">
                 <span class="menu-title">Lock</span>
                 <i class="mdi mdi-lock menu-icon"></i>
             </a>
@@ -199,7 +221,7 @@
 
         <!-- News -->
         <li class="nav-item">
-            <a class="nav-link" href="{{url('/admin/news')}}">
+            <a class="nav-link" href="{{ url('/admin/news') }}">
                 <span class="menu-title">News</span>
                 <i class="mdi mdi-newspaper menu-icon"></i>
             </a>
@@ -211,30 +233,30 @@
                 aria-controls="settings">
                 <span class="menu-title">Settings</span>
                 <i class="menu-arrow"></i>
-                 <i class="mdi mdi-cog menu-icon"></i>
+                <i class="mdi mdi-cog menu-icon"></i>
             </a>
             <div class="collapse" id="settings">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url('/admin/about-us')}}">
+                        <a class="nav-link" href="{{ url('/admin/about-us') }}">
                             <span class="menu-title">About Us</span>
                             <i class="mdi mdi-information-outline menu-icon"></i>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url('/admin/site-seeting')}}">
+                        <a class="nav-link" href="{{ url('/admin/site-seeting') }}">
                             <span class="menu-title">Site Setting</span>
                             <i class="mdi mdi-cogs menu-icon"></i>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url('/admin/policy-seeting')}}">
+                        <a class="nav-link" href="{{ url('/admin/policy-seeting') }}">
                             <span class="menu-title">Policy Setting</span>
                             <i class="mdi mdi-cogs menu-icon"></i>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url('/admin/banner-settings')}}">
+                        <a class="nav-link" href="{{ url('/admin/banner-settings') }}">
                             <span class="menu-title">Banner Setting</span>
                             <i class="mdi mdi-cogs menu-icon"></i>
                         </a>
