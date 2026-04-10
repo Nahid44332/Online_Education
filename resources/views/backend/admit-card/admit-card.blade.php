@@ -1,7 +1,7 @@
 @extends('backend.master')
 @section('content')
     <div class="container">
-        <a href="{{url('/admin/admit-card/create')}}" class="btn btn-primary">Generate Admit Card</a>
+        <a href="{{ url('/admin/admit-card/create') }}" class="btn btn-primary">Generate Admit Card</a>
     </div>
     <div class="container mt-4">
         <!--begin::Container-->
@@ -36,25 +36,29 @@
                 </tr>
             </thead>
             <tbody>
-               @foreach ($admitcard as $admit)
-                <tr>
-                    <td>{{$loop->index+1}}</td>
-                    <td>{{$admit->student->name}}</td>
-                    <td>{{$admit->student->id}}</td>
-                    <td>
-                        <img src="{{asset('backend/images/students/'.$admit->student->image) }}" alt="">
-                    </td>
-                    <td>{{$admit->course}}</td>
-                    <td>{{$admit->exam}}</td>
-                    <td>{{$admit->exam_date}}</td>
-                    <td>{{$admit->seat_no}}</td>
-                    <td>
-                        <a href="{{url('/admin/admit-card/edit/'.$admit->id)}}" class="btn btn-sm btn-primary"><i class="fa-solid fa-pen"></i></a>
-                        <a href="{{url('/admin/admit-card/delete/'.$admit->id)}}" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>
-                        <a href="{{url('/admin/admit-card/print-admit/'.$admit->id)}}" class="btn btn-sm btn-info"><i class="fa-solid fa-print"></i></a>
-                    </td>
-                </tr>
-               @endforeach
+                @foreach ($admitcard as $admit)
+                    <tr>
+                        <td>{{ $loop->index + 1 }}</td>
+                        <td>{{ $admit->student->name }}</td>
+                        <td>{{ $admit->student->id }}</td>
+                        <td>
+                            <img src="{{ asset('backend/images/students/' . $admit->student->image) }}" alt="">
+                        </td>
+                        <td>{{ $admit->course }}</td>
+                        <td>{{ $admit->exam }}</td>
+                        <td>{{ $admit->exam_date }}</td>
+                        <td>{{ $admit->seat_no }}</td>
+                        <td>
+                            <a href="{{ url('/admin/admit-card/edit/' . $admit->id) }}" class="btn btn-sm btn-primary"><i
+                                    class="fa-solid fa-pen"></i></a>
+                            <a href="{{ url('/admin/admit-card/delete/' . $admit->id) }}" class="btn btn-sm btn-danger"><i
+                                    class="fa-solid fa-trash"></i></a>
+                            <a href="{{ route('admin.admit-card.download', $admit->id) }}" class="btn btn-sm btn-success">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
         <div class="">

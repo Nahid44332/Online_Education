@@ -62,6 +62,30 @@
                 </a>
             </li>
         @endif
+        @if (Auth::guard('student')->user()->status == 1)
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('student.admit-card')}}">
+                    <span class="menu-title">Admit Card</span>
+                    <i class="mdi mdi-card-account-details-outline menu-icon"></i>
+                </a>
+            </li>
+        @endif
+        @if (Auth::guard('student')->user()->status == 1)
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('student.exams')}}">
+                    <span class="menu-title">Exam</span>
+                    <i class="mdi mdi-ab-testing menu-icon"></i>
+                </a>
+            </li>
+        @endif
+        @if (Auth::guard('student')->user()->status == 1)
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('student.result')}}">
+                    <span class="menu-title">Result</span>
+                    <i class="mdi mdi-file-find-outline menu-icon"></i>
+                </a>
+            </li>
+        @endif
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false"
                 aria-controls="ui-basic">

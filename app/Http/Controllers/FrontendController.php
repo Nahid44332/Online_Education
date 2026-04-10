@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Yoeunes\Toastr\Facades\Toastr;
 
 class FrontendController extends Controller
@@ -156,6 +157,16 @@ class FrontendController extends Controller
 
         return view('frontend.result_view', compact('result'));
     }
+
+   public function downloadResult($id)
+{
+    $result = Result::with('student.course')->findOrFail($id);
+
+    // উপরে Pdf ফাসাদ ইমপোর্ট করা আছে, তাই সরাসরি Pdf:: ব্যবহার করা যাবে
+    $pdf = Pdf::loadView('frontend.result-pdf', compact('result'));
+
+    return $pdf->download('Result_' . $result->student->name . '.pdf');
+}
 
     public function contactUs()
     {
@@ -345,47 +356,47 @@ class FrontendController extends Controller
     }
 
     public function subadminLoginSubmit(Request $request)
-{
-    // ১. ভ্যালিডেশন (এখানে 'position' যোগ করা হয়েছে)
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-        'position' => 'required', // লগইন ফর্মে পজিশন ফিল্ডের name যদি 'position' হয়
-    ]);
+    {
+        // ১. ভ্যালিডেশন (এখানে 'position' যোগ করা হয়েছে)
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+            'position' => 'required', // লগইন ফর্মে পজিশন ফিল্ডের name যদি 'position' হয়
+        ]);
 
-    // শুধু ইমেইল এবং পাসওয়ার্ড দিয়ে লগইন ট্রাই করা
-    $credentials = $request->only('email', 'password');
+        // শুধু ইমেইল এবং পাসওয়ার্ড দিয়ে লগইন ট্রাই করা
+        $credentials = $request->only('email', 'password');
 
-    if (Auth::guard('subadmin')->attempt($credentials)) {
-        $user = Auth::guard('subadmin')->user();
+        if (Auth::guard('subadmin')->attempt($credentials)) {
+            $user = Auth::guard('subadmin')->user();
 
-        // ২. ফর্মের পজিশন আর ডাটাবেসের পজিশন চেক করা
-        // যদি ডাটাবেসের পজিশন আর ইউজার সিলেক্ট করা পজিশন না মিলে
-        if ($user->position !== $request->position) {
-            Auth::guard('subadmin')->logout(); // লগইন হয়ে গেলে বের করে দেওয়া
-            return back()->with('error', 'আপনার সিলেক্ট করা পজিশনটি সঠিক নয়।');
+            // ২. ফর্মের পজিশন আর ডাটাবেসের পজিশন চেক করা
+            // যদি ডাটাবেসের পজিশন আর ইউজার সিলেক্ট করা পজিশন না মিলে
+            if ($user->position !== $request->position) {
+                Auth::guard('subadmin')->logout(); // লগইন হয়ে গেলে বের করে দেওয়া
+                return back()->with('error', 'আপনার সিলেক্ট করা পজিশনটি সঠিক নয়।');
+            }
+
+            // ৩. স্ট্যাটাস চেক
+            if ($user->status == 0) {
+                Auth::guard('subadmin')->logout();
+                return back()->with('error', 'আপনার অ্যাকাউন্টটি বর্তমানে বন্ধ আছে।');
+            }
+
+            // ৪. পজিশন অনুযায়ী রিডাইরেক্ট
+            if ($user->position == 'teacher') {
+                toastr()->success('স্বাগতম টিচার প্যানেলে');
+                return redirect()->route('teacher.dashboard');
+            } elseif ($user->position == 'manager') {
+                return redirect()->route('manager.dashboard');
+            }
+
+            return redirect()->intended('/panel/dashboard');
         }
 
-        // ৩. স্ট্যাটাস চেক
-        if ($user->status == 0) {
-            Auth::guard('subadmin')->logout();
-            return back()->with('error', 'আপনার অ্যাকাউন্টটি বর্তমানে বন্ধ আছে।');
-        }
-
-        // ৪. পজিশন অনুযায়ী রিডাইরেক্ট
-        if ($user->position == 'teacher') {
-            toastr()->success('স্বাগতম টিচার প্যানেলে');
-            return redirect()->route('teacher.dashboard');
-        } elseif ($user->position == 'manager') {
-            return redirect()->route('manager.dashboard');
-        }
-
-        return redirect()->intended('/panel/dashboard');
+        // লগইন ব্যর্থ হলে
+        return back()->with('error', 'ইমেইল বা পাসওয়ার্ড সঠিক নয়।');
     }
-
-    // লগইন ব্যর্থ হলে
-    return back()->with('error', 'ইমেইল বা পাসওয়ার্ড সঠিক নয়।');
-}
     public function subadminLogout()
     {
         Auth::guard('subadmin')->logout();

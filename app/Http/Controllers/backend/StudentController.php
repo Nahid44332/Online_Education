@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\LiveClass;
 use App\Models\Student;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -102,5 +103,61 @@ class StudentController extends Controller
         }
 
         return view('backend.student-panel.course.course', compact('student', 'course', 'liveclass'));
+    }
+
+    public function viewAdmitCard()
+    {
+        // ১. লগইন করা স্টুডেন্টের তথ্য নিন (এটি নেভবারে ছবি ও নামের জন্য লাগবে)
+        $student = auth()->guard('student')->user();
+
+        // ২. স্টুডেন্টের এডমিট কার্ড খুঁজে বের করুন
+        $admitCard = \App\Models\AdmitCard::where('student_id', $student->id)
+            ->with('student')
+            ->latest()
+            ->first();
+
+        // ৩. ভিউতে অবশ্যই 'student' ভ্যারিয়েবলটি পাঠাতে হবে
+        return view('backend.student-panel.admit-card.admit-card', compact('admitCard', 'student'));
+    }
+
+    public function downloadAdmitCard($id)
+    {
+        $admitCard = \App\Models\AdmitCard::with('student')->find($id);
+
+        // যদি আইডি ভুল হয় বা কার্ড না থাকে
+        if (!$admitCard) {
+            return redirect()->back()->with('error', 'Admit card not found!');
+        }
+
+        $pdf = Pdf::loadView('backend.student-panel.admit-card.admit-pdf', compact('admitCard'));
+        return $pdf->download('AdmitCard.pdf');
+    }
+
+    public function viewResult()
+    {
+        // ১. লগইন করা স্টুডেন্টের তথ্য ও আইডি নিন
+        $student = auth()->guard('student')->user();
+
+        // ২. এই স্টুডেন্টের সকল রেজাল্ট নিয়ে আসা (লেটেস্টগুলো আগে)
+        $results = \App\Models\Result::where('student_id', $student->id)
+            ->latest()
+            ->get();
+
+        return view('backend.student-panel.result.view-result', compact('student', 'results'));
+    }
+
+    public function myExams()
+    {
+        // ১. স্টুডেন্ট ডাটা নিন
+        $student = auth()->guard('student')->user();
+
+        // ২. এক্সাম ডাটা নিন
+        $exams = \App\Models\Exam::where('course_id', $student->course_id)
+            ->with('teacher')
+            ->latest()
+            ->get();
+
+        // ৩. ভিউতে 'student' ভেরিয়েবলটি পাস করুন
+        return view('backend.student-panel.exams.exams', compact('exams', 'student'));
     }
 }

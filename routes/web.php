@@ -51,6 +51,7 @@ Route::get('/teacher/application/status', [FrontendController::class, 'showAppli
 Route::post('/teacher/application/status', [FrontendController::class, 'checkApplicationStatus'])->name('teacher.application.status.check');
 Route::get('/student-result', [FrontendController::class, 'studentResult']);
 Route::post('/student-result', [FrontendController::class, 'showResult']);
+Route::get('/result/download/{id}', [FrontendController::class, 'downloadResult'])->name('result.download');
 Route::get('/certificate/check', [FrontendController::class, 'checkForm']);
 Route::post('/certificate/check', [FrontendController::class, 'checkStatus']);
 Route::get('/notice', [FrontendController::class, 'notice']);
@@ -119,6 +120,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/course/edit/{id}', [CourseController::class, 'courseEdit']);
     Route::post('/course/update/{id}', [CourseController::class, 'courseUpdate']);
 
+
     // Payments, Exams, Results, Certificates
     Route::get('/payment/list', [PaymentController::class, 'paymentList']);
     Route::get('/payments/create/{student_id}', [PaymentController::class, 'createPayment'])->name('admin.payments.create');
@@ -126,10 +128,26 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/student/payments/{id}', [PaymentController::class, 'getStudentPayments']);
     Route::get('/payment/download/{id}', [PaymentController::class, 'paymentPrint']);
     Route::get('/admit-card', [admitCardController::class, 'admitCard']);
+    Route::get('/admit-card/create', [admitCardController::class, 'admitCardCreate']);
+    Route::get('/admit-card/delete/{id}', [admitCardController::class, 'admitDelete']);
+    Route::get('/admit-card/edit/{id}', [admitCardController::class, 'admitEdit']);
+    Route::post('/admit-card/update/{id}', [admitCardController::class, 'admitUpdate']);
+    Route::get('/admit-card/download/{id}', [admitCardController::class, 'downloadAdmitCard'])->name('admin.admit-card.download');
+    Route::get('/get-student-course/{id}', [admitCardController::class, 'getStudentCourse']);
+    Route::post('/admit-card/create/store', [admitCardController::class, 'admitCardStore']);
     Route::get('/exam', [ExamController::class, 'exam']);
     Route::get('/exam/create', [ExamController::class, 'examCreate']);
+    Route::post('/exam/create/store', [ExamController::class, 'examStore'])->name('admin.exams.store');
+     Route::get('/exam/delete/{id}', [ExamController::class, 'examDelete']);
     Route::get('/student/result', [resultController::class, 'studentResult']);
+    Route::get('/student/result-create', [resultController::class, 'createResult']);
+    Route::post('/student/result/store', [resultController::class, 'storeResult']);
     Route::get('/student/certificate', [CertificateController::class, 'studentCertificate']);
+    Route::get('/student/certificate/create', [CertificateController::class, 'studentCertificateCreate']);
+    Route::post('/student/certificate/store', [CertificateController::class, 'certificateStore']);
+    Route::get('/student/certificate/{id}', [CertificateController::class, 'certificateView']);
+    Route::get('/student/certificate/download/{id}', [CertificateController::class, 'downloadCertificate']);
+    
 
     //Reports
     Route::get('/reports', [ReportController::class, 'allReports']);
@@ -220,6 +238,13 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
 
     // Academic
     Route::get('/course', [StudentController::class, 'Course'])->name('student.course');
+    Route::get('/admit-card', [StudentController::class, 'viewAdmitCard'])->name('student.admit-card');
+    Route::get('/admit-card/download/{id}', [StudentController::class, 'downloadAdmitCard'])->name('student.admit-card.download');
+
+    //Exam
+    Route::get('/student/exams', [StudentController::class, 'myExams'])->name('student.exams');
+    //Result
+    Route::get('/my-results', [StudentController::class, 'viewResult'])->name('student.result');
 });
 
 
@@ -237,6 +262,8 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/teacher/student-list', [TeacherPanelController::class, 'studentList'])->name('stdent.list');
         Route::get('/withdraw', [TeacherPanelController::class, 'withdraw'])->name('teacher.withdraw');
         Route::post('/withdraw-request', [TeacherPanelController::class, 'withdrawStore'])->name('teacher.withdraw.store');
+        Route::get('/transactions', [TeacherPanelController::class, 'transactionHistory'])->name('teacher.transactions');
+        Route::get('/teacher/admin-questions', [TeacherPanelController::class, 'adminQuestions'])->name('teacher.adminQuestions');
         // টিচারের অন্য সব রাউট এখানে দাও
     });
 

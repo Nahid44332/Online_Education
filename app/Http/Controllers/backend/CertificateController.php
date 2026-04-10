@@ -6,36 +6,38 @@ use App\Http\Controllers\Controller;
 use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Result;
+use App\Models\Settings;
 use App\Models\Student;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Yoeunes\Toastr\Facades\Toastr;
 
 class CertificateController extends Controller
 {
-      public function __construct()
+    public function __construct()
     {
         $this->middleware('auth');
     }
-    
+
     public function studentCertificate(Request $request)
     {
         $query = Certificate::with(['student', 'course', 'result'])->latest();
 
         if ($request->search) {
-        $search = $request->search;
-        $query->whereHas('student', function($q) use ($search) {
+            $search = $request->search;
+            $query->whereHas('student', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('id', $search);
+                    ->orWhere('id', $search);
             })
-            ->orWhere('certificate_no', 'like', "%{$search}%")
-            ->orWhereHas('course', function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%");
-            });
-    }
+                ->orWhere('certificate_no', 'like', "%{$search}%")
+                ->orWhereHas('course', function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                });
+        }
 
-    $certificates = $query->paginate(10);
+        $certificates = $query->paginate(10);
 
-    return view('backend.certificate.certificate', compact('certificates'));
+        return view('backend.certificate.certificate', compact('certificates'));
     }
 
 
@@ -86,18 +88,26 @@ class CertificateController extends Controller
         return view('backend.certificate.view', compact('certificate'));
     }
 
-    public function certificatePrint($id)
-    {
-        $certificate = Certificate::with(['student', 'course'])->findOrFail($id);
-        return view('backend.certificate.print', compact('certificate'));
-    }
-
     public function certificateDelete($id)
     {
         $certificate = Certificate::find($id);
-        
+
         $certificate->delete();
         Toastr()->success('Certificate Delete Successfully!');
         return redirect()->back();
+    }
+
+    public function downloadCertificate($id)
+    {
+        $certificate = Certificate::with(['student', 'course', 'result'])->findOrFail($id);
+
+        // সাইট সেটিংস আলাদাভাবে পাস করতে হতে পারে যদি সেটি গ্লোবাল না হয়
+        $sitesettings = Settings::first();
+
+        $pdf = Pdf::loadView('backend.certificate.certificate-pdf', compact('certificate', 'sitesettings'))
+            ->setPaper('a4', 'landscape')
+            ->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
+
+        return $pdf->download('Certificate_' . $certificate->student->name . '.pdf');
     }
 }

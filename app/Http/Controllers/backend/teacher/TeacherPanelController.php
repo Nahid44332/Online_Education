@@ -108,18 +108,18 @@ class TeacherPanelController extends Controller
         return view('backend.teacher-panel.student-list', compact('students'));
     }
 
-   public function withdraw()
-{
-    $subadmin = Auth::guard('subadmin')->user();
-    $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+    public function withdraw()
+    {
+        $subadmin = Auth::guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
 
-    // এই টিচারের সব উইথড্র রিকোয়েস্ট লেটেস্ট অনুযায়ী আনা
-    $withdrawals = \App\Models\Withdrawal::where('teacher_id', $teacher->id)
-                    ->orderBy('id', 'desc')
-                    ->get();
+        // এই টিচারের সব উইথড্র রিকোয়েস্ট লেটেস্ট অনুযায়ী আনা
+        $withdrawals = \App\Models\Withdrawal::where('teacher_id', $teacher->id)
+            ->orderBy('id', 'desc')
+            ->get();
 
-    return view('backend.teacher-panel.withdraw', compact('teacher', 'withdrawals'));
-}
+        return view('backend.teacher-panel.withdraw', compact('teacher', 'withdrawals'));
+    }
 
     public function withdrawStore(Request $request)
     {
@@ -141,4 +141,38 @@ class TeacherPanelController extends Controller
 
         return back()->with('success', 'আপনার উইথড্র রিকোয়েস্টটি পেন্ডিং আছে।');
     }
+
+    public function transactionHistory()
+    {
+        $subadmin = Auth::guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+        $transactions = \App\Models\Transaction::where('teacher_id', $teacher->id)
+            ->orderBy('id', 'desc')
+            ->paginate(10); // ১০টি করে দেখাবে
+
+        return view('backend.teacher-panel.transactions', compact('transactions'));
+    }
+
+   public function adminQuestions()
+{
+    // ১. বর্তমানে লগইন করা সাব-অ্যাডমিন (টিচার) ইউজার নিন
+    $subadmin = auth()->guard('subadmin')->user();
+
+    // ২. আপনার ডাটাবেজ স্ট্রাকচার অনুযায়ী টিচার আইডি খুঁজে বের করুন
+    // যদি subadmins টেবিলের আইডি-ই আপনার exams টেবিলের teacher_id হয়:
+    $teacherId = $subadmin->id;
+
+    // অথবা যদি Teacher মডেলে আলাদা এন্ট্রি থাকে (আপনার transactionHistory মেথডের মতো):
+    $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+    $teacherId = $teacher->id;
+
+    // ৩. ওই টিচার আইডির প্রশ্নগুলো আনুন
+    $exams = \App\Models\Exam::where('teacher_id', $teacherId)
+                ->with('course')
+                ->latest()
+                ->get();
+
+    return view('backend.teacher-panel.admin-exams', compact('exams'));
+}
 }

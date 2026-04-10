@@ -23,20 +23,11 @@
         </li>
 
         <!-- Students -->
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#student-menu" aria-expanded="false"
-                aria-controls="student-menu">
+         <li class="nav-item">
+            <a class="nav-link" href="{{ url('/admin/student/list') }}">
                 <span class="menu-title">Students</span>
-                <i class="menu-arrow"></i>
                 <i class="mdi mdi-account menu-icon"></i>
             </a>
-            <div class="collapse" id="student-menu">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/admin/student/list') }}">Student List</a>
-                    </li>
-                </ul>
-            </div>
         </li>
 
         <!-- Teachers -->

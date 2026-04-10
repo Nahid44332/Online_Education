@@ -24,7 +24,8 @@
         <form action="{{ url('/admin/student/certificate') }}" method="GET" class="mb-3">
             <div class="mb-3">
                 <input type="text" name="search" class="form-control"
-                    placeholder="Search by Student Name, ID, Certificate No, Course" value="{{ request('search') }}" required>
+                    placeholder="Search by Student Name, ID, Certificate No, Course" value="{{ request('search') }}"
+                    required>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-success" type="submit">Search</button>
@@ -57,8 +58,10 @@
                         <td>
                             <a href="{{ url('/admin/student/certificate/' . $certificate->id) }}"
                                 class="btn btn-success btn-sm"><span class="mdi mdi-eye"></span></a>
-                            <a href="{{ url('/admin/student/certificate/print/' . $certificate->id) }}"
-                                class="btn btn-info btn-sm"><span class="mdi mdi-printer"></span></a>
+                            <a href="{{ url('/admin/student/certificate/download/' . $certificate->id) }}"
+                                class="btn btn-primary btn-sm">
+                                <span class="mdi mdi-download"></span>
+                            </a>
                             <a href="{{ url('/admin/student/certificate/delete/' . $certificate->id) }}"
                                 class="btn btn-danger btn-sm"
                                 onclick="return confirm('Are you sure delete Certificate?')"><span

@@ -5,16 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class admitCard extends Model
+class Transaction extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
-    protected $table = 'admit_cards';
 
-   public function student()
-    {
-        return $this->belongsTo(Student::class, 'student_id', 'id');
-    }
-
+    protected $fillable = ['teacher_id', 'amount', 'type', 'description'];
 }

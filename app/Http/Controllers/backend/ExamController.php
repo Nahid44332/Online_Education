@@ -22,34 +22,44 @@ class ExamController extends Controller
 
     public function examCreate(Request $request)
     {
-        return view('backend.exam.exam-create');
+        $exams = Exam::with(['teacher', 'course'])->latest()->get();
+        $teachers = \App\Models\Teacher::all();
+        $courses = \App\Models\Course::all();
+        return view('backend.exam.exam-create', compact('exams', 'teachers', 'courses'));
     }
 
     public function examStore(Request $request)
     {
+        $request->validate([
+            'title' => 'required',
+            'teacher_id' => 'required',
+            'course_id' => 'required',
+            'exam_file' => 'required|mimes:pdf,docx,jpg,png|max:10240',
+        ]);
+
         $exam = new Exam();
-
         $exam->title = $request->title;
-        $exam->exam_date = $request->exam_date;
+        $exam->teacher_id = $request->teacher_id;
+        $exam->course_id = $request->course_id;
+        $exam->exam_date = $request->exam_date ?? now();
 
-         if(isset($request->exam_file)){
-            $imageName = rand().'.'.'exam'.'.'.$request->exam_file->extension();
-            $request->exam_file->move('backend/file/exam/', $imageName);
-            
-            $exam->exam_file = $imageName; 
+        if ($request->hasFile('exam_file')) {
+            $file = $request->file('exam_file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('backend/files/exams/'), $fileName);
+            $exam->exam_file = $fileName;
         }
 
         $exam->save();
-        Toastr()->success('Exam File Upload Successfully!');
-        return redirect()->back();
+        return back()->with('success', 'Exam file uploaded successfully!');
     }
 
     public function examDelete($id)
     {
         $exam = Exam::find($id);
-        
-         if($exam->exam_file && file_exists('backend/file/exam/'.$exam->exam_file)){
-            unlink('backend/file/exam/'.$exam->exam_file);
+
+        if ($exam->exam_file && file_exists('backend/files/exams/' . $exam->exam_file)) {
+            unlink('backend/files/exams/' . $exam->exam_file);
         }
         $exam->delete();
         Toastr()->success('Exam File Delete Successfully!');

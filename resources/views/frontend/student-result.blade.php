@@ -61,14 +61,14 @@
     @endif
 
     <form action="{{url('/student-result')}}" method="POST">
-        @csrf
-        <div class="mb-4">
-            <label for="student_id" class="form-label fw-bold">Enter Your Student ID</label>
-            <input type="text" name="student_id" class="form-control form-control-lg" placeholder="e.g. 2023001" required>
-        </div>
+    @csrf
+    <div class="mb-4">
+        <label for="student_id" class="form-label fw-bold">Enter Your Student ID</label>
+        <input type="text" name="student_id" class="form-control form-control-lg" placeholder="e.g. 2023001" required>
+    </div>
 
-        <button type="submit" class="btn btn-success btn-submit">View Result</button>
-    </form>
+    <button type="submit" class="btn btn-success btn-submit">View Result</button>
+</form>
 
     <div class="text-center mt-4">
         <small class="text-muted">Make sure you enter your correct Student ID to view the result.</small>

@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Payment;
 use App\Models\ReferralHistory;
+use App\Models\Transaction;
 use App\Models\WithdrawRequest;
 use Illuminate\Http\Request;
 
@@ -248,11 +249,19 @@ class adminController extends Controller
 
         $teacher = \App\Models\Teacher::find($request->teacher_id);
 
-        // আগের পয়েন্টের সাথে নতুন পয়েন্ট যোগ (Increment)
+        // ১. আগের পয়েন্টের সাথে নতুন পয়েন্ট যোগ (Increment)
         $teacher->points += $request->points;
         $teacher->save();
 
-        return back()->with('success', 'Point Added Successfully.');
+        // ২. ট্রানজেকশন হিস্ট্রিতে ডাটা সেভ করা
+        Transaction::create([
+            'teacher_id'  => $teacher->id,
+            'amount'      => $request->points,
+            'type'        => 'credit', // যেহেতু পয়েন্ট বাড়ছে, তাই এটি credit
+            'description' => 'Admin added points as salary/reward',
+        ]);
+
+        return back()->with('success', 'Point Added Successfully and recorded in history.');
     }
 
     public function withdrawRequests()
@@ -287,6 +296,13 @@ class adminController extends Controller
                 // ৫. উইথড্র স্ট্যাটাস আপডেট করা
                 $withdrawal->status = 'approved';
                 $withdrawal->save();
+
+                Transaction::create([
+                    'teacher_id' => $teacher->id,
+                    'amount' => $withdrawal->amount,
+                    'type' => 'debit',
+                    'description' => 'Withdrawal approved (Method: ' . $withdrawal->method . ')'
+                ]);
 
                 return back()->with('success', 'রিকোয়েস্ট এপ্রুভ হয়েছে এবং পয়েন্ট কেটে নেওয়া হয়েছে।');
             } else {
