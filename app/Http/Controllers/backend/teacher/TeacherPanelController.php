@@ -154,25 +154,67 @@ class TeacherPanelController extends Controller
         return view('backend.teacher-panel.transactions', compact('transactions'));
     }
 
-   public function adminQuestions()
-{
-    // ১. বর্তমানে লগইন করা সাব-অ্যাডমিন (টিচার) ইউজার নিন
-    $subadmin = auth()->guard('subadmin')->user();
+    public function examCreate()
+    {
+        $courses = \App\Models\Course::all(); // এই লাইনটি জরুরি
+        return view('backend.teacher-panel.exams-create', compact('courses'));
+    }
 
-    // ২. আপনার ডাটাবেজ স্ট্রাকচার অনুযায়ী টিচার আইডি খুঁজে বের করুন
-    // যদি subadmins টেবিলের আইডি-ই আপনার exams টেবিলের teacher_id হয়:
-    $teacherId = $subadmin->id;
+    public function examStore(Request $request)
+    {
+        $request->validate([
+            'title' => 'required',
+            'course_id' => 'required',
+            'exam_file' => 'required|mimes:pdf,docx,jpg,png|max:10240',
+        ]);
 
-    // অথবা যদি Teacher মডেলে আলাদা এন্ট্রি থাকে (আপনার transactionHistory মেথডের মতো):
-    $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
-    $teacherId = $teacher->id;
+        $subadmin = auth()->guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
 
-    // ৩. ওই টিচার আইডির প্রশ্নগুলো আনুন
-    $exams = \App\Models\Exam::where('teacher_id', $teacherId)
-                ->with('course')
-                ->latest()
-                ->get();
+        $exam = new \App\Models\Exam();
+        $exam->title = $request->title;
+        $exam->teacher_id = $teacher->id;
+        $exam->course_id = $request->course_id;
+        $exam->exam_date = $request->exam_date ?? now();
+        $exam->status = 'pending';
 
-    return view('backend.teacher-panel.admin-exams', compact('exams'));
-}
+        if ($request->hasFile('exam_file')) {
+            $file = $request->file('exam_file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('backend/files/exams/'), $fileName);
+            $exam->exam_file = $fileName;
+        }
+
+        $exam->save();
+        return redirect()->back()->with('success', 'Exam file uploaded. Waiting for Admin approval.');
+    }
+
+    public function myExams()
+    {
+        $subadmin = auth()->guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+        $exams = \App\Models\Exam::where('teacher_id', $teacher->id)->latest()->get();
+        $courses = \App\Models\Course::all(); // ড্রপডাউনের জন্য এটি যোগ করুন
+
+        return view('backend.teacher-panel.exams-create', compact('exams', 'courses'));
+    }
+
+    public function examDelete($id)
+    {
+        $exam = \App\Models\Exam::find($id);
+
+        // ১. পাবলিক ফোল্ডার থেকে ফাইলটি ডিলিট করা
+        if ($exam->exam_file) {
+            $filePath = public_path('backend/files/exams/' . $exam->exam_file);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+
+        // ২. ডাটাবেজ থেকে ডিলিট করা
+        $exam->delete();
+
+        return back()->with('success', 'পরীক্ষার ফাইলটি সফলভাবে ডিলিট করা হয়েছে।');
+    }
 }

@@ -22,7 +22,9 @@ use App\Http\Controllers\backend\lockController;
 use App\Http\Controllers\backend\TestimonialController;
 use App\Http\Controllers\backend\NewsController;
 use App\Http\Controllers\backend\SettingController;
+use App\Http\Controllers\backend\SubadminController;
 use App\Http\Controllers\backend\teacher\TeacherPanelController;
+use App\Http\Controllers\backend\TeamLeaderPanelController;
 use App\Http\Controllers\backend\WithdrawController;
 use App\Http\Controllers\ReferralController;
 
@@ -31,6 +33,7 @@ use App\Http\Controllers\ReferralController;
 | Frontend Routes
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', [FrontendController::class, 'index']);
 Route::get('/about-us', [FrontendController::class, 'aboutUs']);
 Route::get('/courses', [FrontendController::class, 'courses']);
@@ -88,7 +91,7 @@ Auth::routes(['register' => false]);
 |--------------------------------------------------------------------------
 */
 Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
-    
+
     Route::get('/dashboard', [adminController::class, 'adminDashboard'])->name('admin.dashboard');
 
     // Students Management
@@ -135,10 +138,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/admit-card/download/{id}', [admitCardController::class, 'downloadAdmitCard'])->name('admin.admit-card.download');
     Route::get('/get-student-course/{id}', [admitCardController::class, 'getStudentCourse']);
     Route::post('/admit-card/create/store', [admitCardController::class, 'admitCardStore']);
-    Route::get('/exam', [ExamController::class, 'exam']);
-    Route::get('/exam/create', [ExamController::class, 'examCreate']);
-    Route::post('/exam/create/store', [ExamController::class, 'examStore'])->name('admin.exams.store');
-     Route::get('/exam/delete/{id}', [ExamController::class, 'examDelete']);
+    Route::get('/exam-list', [ExamController::class, 'examList'])->name('admin.exam.list');
+    Route::get('/exam-approve/{id}', [ExamController::class, 'approveExam'])->name('admin.exam.approve');
+    Route::get('/exam-delete/{id}', [ExamController::class, 'examDelete'])->name('admin.exam.delete');
     Route::get('/student/result', [resultController::class, 'studentResult']);
     Route::get('/student/result-create', [resultController::class, 'createResult']);
     Route::post('/student/result/store', [resultController::class, 'storeResult']);
@@ -147,7 +149,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/student/certificate/store', [CertificateController::class, 'certificateStore']);
     Route::get('/student/certificate/{id}', [CertificateController::class, 'certificateView']);
     Route::get('/student/certificate/download/{id}', [CertificateController::class, 'downloadCertificate']);
-    
+
 
     //Reports
     Route::get('/reports', [ReportController::class, 'allReports']);
@@ -186,9 +188,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/news/status/{id}', [NewsController::class, 'changeStatus'])->name('news.status');
 
     //Withwraw
-    Route::get('/withdraw/list',[adminController::class,'withdrawList']);
-    Route::get('/withdraw/approve/{id}',[adminController::class, 'withdrawApprove']);
-    Route::get('/withdraw/reject/{id}',[adminController::class, 'withdrawReject']);
+    Route::get('/withdraw/list', [adminController::class, 'withdrawList']);
+    Route::get('/withdraw/approve/{id}', [adminController::class, 'withdrawApprove']);
+    Route::get('/withdraw/reject/{id}', [adminController::class, 'withdrawReject']);
 
     // Settings & Profile
     Route::get('/profile', [AdminProfileController::class, 'profile']);
@@ -207,7 +209,15 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     //withdraw....
     Route::get('/teacher-withdraw-requests', [adminController::class, 'withdrawRequests'])->name('admin.withdraw.requests');
     Route::post('/withdraw-approve/{id}', [adminController::class, 'approveWithdraw'])->name('admin.withdraw.approve');
-    Route::post('/withdraw-reject/{id}', [App\Http\Controllers\backend\adminController::class, 'rejectWithdraw'])->name('admin.withdraw.reject');
+    Route::post('/withdraw-reject/{id}', [adminController::class, 'rejectWithdraw'])->name('admin.withdraw.reject');
+
+    //Subadmin Route....
+    Route::get('/team-leader', [SubadminController::class, 'teamLeader']);
+    Route::post('/team-leader/store', [SubadminController::class, 'storeTeamLeader'])->name('admin.team_leader.store');
+    Route::post('/team-leader/update/{id}', [SubadminController::class, 'updateTeamLeader'])->name('admin.team_leader.update');
+    Route::get('/team-leader/delete/{id}', [SubadminController::class, 'deleteTeamLeader'])->name('admin.team_leader.delete');
+    Route::get('/team-leader/assign-student/{id}', [SubadminController::class, 'assignStudentPage'])->name('admin.assign_page');
+    Route::get('/team-leader/add-to-team/{tl_id}/{student_id}', [SubadminController::class, 'confirmAssign'])->name('admin.do_assign');
 });
 
 
@@ -220,10 +230,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
 
 // Student Dashboard & Panel (Protected by Student Guard)
 Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function () {
-    
+
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
     Route::post('/logout', [StudentController::class, 'logout'])->name('student.logout');
-    
+
     // Profile
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
     Route::get('/profile/edit', [StudentController::class, 'profileEdit'])->name('student.profile.edit');
@@ -241,10 +251,11 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
     Route::get('/admit-card', [StudentController::class, 'viewAdmitCard'])->name('student.admit-card');
     Route::get('/admit-card/download/{id}', [StudentController::class, 'downloadAdmitCard'])->name('student.admit-card.download');
 
-    //Exam
+    //Exam, Result, Certificate
     Route::get('/student/exams', [StudentController::class, 'myExams'])->name('student.exams');
-    //Result
     Route::get('/my-results', [StudentController::class, 'viewResult'])->name('student.result');
+    Route::get('/my-certificates', [StudentController::class, 'myCertificates'])->name('student.certificates');
+    Route::get('/certificate/download/{id}', [StudentController::class, 'downloadCertificate'])->name('student.certificate.download');
 });
 
 
@@ -263,13 +274,16 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/withdraw', [TeacherPanelController::class, 'withdraw'])->name('teacher.withdraw');
         Route::post('/withdraw-request', [TeacherPanelController::class, 'withdrawStore'])->name('teacher.withdraw.store');
         Route::get('/transactions', [TeacherPanelController::class, 'transactionHistory'])->name('teacher.transactions');
-        Route::get('/teacher/admin-questions', [TeacherPanelController::class, 'adminQuestions'])->name('teacher.adminQuestions');
+        Route::get('/exam/create', [TeacherPanelController::class, 'examCreate'])->name('exam.create');
+        Route::post('/exam/store', [TeacherPanelController::class, 'examStore'])->name('exam.store');
+        Route::get('/exam/my-list', [TeacherPanelController::class, 'myExams'])->name('exam.list');
+        Route::get('/panel/teacher/exam/delete/{id}', [TeacherPanelController::class, 'examDelete'])->name('exam.delete');
         // টিচারের অন্য সব রাউট এখানে দাও
     });
 
-    // // শুধুমাত্র ম্যানেজারদের জন্য রাউট
-    // Route::group(['middleware' => 'subadmin.role:manager'], function () {
-    //     Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
-    //     // ম্যানেজারের অন্য সব রাউট এখানে দাও
-    // });
+    //Team Leader Panel Route
+    Route::group(['middleware' => 'subadmin.role:team_leader'], function () {    
+        Route::get('/team-leader/dashboard', [TeamLeaderPanelController::class, 'dashboard'])->name('team_leader.dashboard');
+        Route::get('/team-leader/my-students', [TeamLeaderPanelController::class, 'myStudents'])->name('team_leader.students');
+    });
 });

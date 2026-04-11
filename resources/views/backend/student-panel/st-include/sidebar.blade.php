@@ -48,7 +48,7 @@
         @endif
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
-                <a class="nav-link" href="{{route('student.referral-histroy')}}">
+                <a class="nav-link" href="{{ route('student.referral-histroy') }}">
                     <span class="menu-title">Referral History</span>
                     <i class="mdi mdi-book-multiple menu-icon"></i>
                 </a>
@@ -56,7 +56,7 @@
         @endif
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
-                <a class="nav-link" href="{{route('student.withdraw.page')}}">
+                <a class="nav-link" href="{{ route('student.withdraw.page') }}">
                     <span class="menu-title">Withdraw</span>
                     <i class="mdi mdi-cash menu-icon"></i>
                 </a>
@@ -64,7 +64,7 @@
         @endif
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
-                <a class="nav-link" href="{{route('student.admit-card')}}">
+                <a class="nav-link" href="{{ route('student.admit-card') }}">
                     <span class="menu-title">Admit Card</span>
                     <i class="mdi mdi-card-account-details-outline menu-icon"></i>
                 </a>
@@ -72,7 +72,7 @@
         @endif
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
-                <a class="nav-link" href="{{route('student.exams')}}">
+                <a class="nav-link" href="{{ route('student.exams') }}">
                     <span class="menu-title">Exam</span>
                     <i class="mdi mdi-ab-testing menu-icon"></i>
                 </a>
@@ -80,11 +80,19 @@
         @endif
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
-                <a class="nav-link" href="{{route('student.result')}}">
+                <a class="nav-link" href="{{ route('student.result') }}">
                     <span class="menu-title">Result</span>
                     <i class="mdi mdi-file-find-outline menu-icon"></i>
                 </a>
             </li>
+        @endif
+        @if (Auth::guard('student')->user()->status == 1)
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('student.certificates') }}">
+                <span class="menu-title">My Certificates</span>
+                <i class="mdi mdi-certificate menu-icon text-warning"></i>
+            </a>
+        </li>
         @endif
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false"

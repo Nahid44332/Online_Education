@@ -8,7 +8,7 @@
         <select name="student_id" class="form-control" required>
             <option value="">-- Select Student --</option>
             @foreach($students as $student)
-                <option value="{{ $student->id }}">{{ $student->name }}</option>
+                <option value="{{ $student->id }}">{{ $student->name }} (ID:{{$student->id}})</option>
             @endforeach
         </select>
     </div>

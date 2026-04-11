@@ -14,55 +14,39 @@ class ExamController extends Controller
         $this->middleware('auth');
     }
 
-    public function exam()
+    // সব এক্সাম লিস্ট দেখার জন্য
+    public function examList()
     {
-        $exams = Exam::latest()->get();
+        // টিচার এবং কোর্সের নামসহ সব ডাটা নিয়ে আসা
+        $exams = \App\Models\Exam::with(['teacher', 'course'])->latest()->get();
         return view('backend.exam.exam-list', compact('exams'));
     }
 
-    public function examCreate(Request $request)
+    // এক্সাম অ্যাপ্রুভ করার জন্য
+    public function approveExam($id)
     {
-        $exams = Exam::with(['teacher', 'course'])->latest()->get();
-        $teachers = \App\Models\Teacher::all();
-        $courses = \App\Models\Course::all();
-        return view('backend.exam.exam-create', compact('exams', 'teachers', 'courses'));
-    }
-
-    public function examStore(Request $request)
-    {
-        $request->validate([
-            'title' => 'required',
-            'teacher_id' => 'required',
-            'course_id' => 'required',
-            'exam_file' => 'required|mimes:pdf,docx,jpg,png|max:10240',
-        ]);
-
-        $exam = new Exam();
-        $exam->title = $request->title;
-        $exam->teacher_id = $request->teacher_id;
-        $exam->course_id = $request->course_id;
-        $exam->exam_date = $request->exam_date ?? now();
-
-        if ($request->hasFile('exam_file')) {
-            $file = $request->file('exam_file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('backend/files/exams/'), $fileName);
-            $exam->exam_file = $fileName;
-        }
-
+        $exam = \App\Models\Exam::find($id);
+        $exam->status = 'approved';
         $exam->save();
-        return back()->with('success', 'Exam file uploaded successfully!');
+
+        return back()->with('success', 'পরীক্ষার ফাইলটি সফলভাবে অ্যাপ্রুভ করা হয়েছে। এটি এখন স্টুডেন্টরা দেখতে পাবে।');
     }
 
     public function examDelete($id)
     {
-        $exam = Exam::find($id);
+        $exam = \App\Models\Exam::findOrFail($id);
 
-        if ($exam->exam_file && file_exists('backend/files/exams/' . $exam->exam_file)) {
-            unlink('backend/files/exams/' . $exam->exam_file);
+        // ১. সার্ভার/ফোল্ডার থেকে ফাইলটি ডিলিট করা
+        if ($exam->exam_file) {
+            $filePath = public_path('backend/files/exams/' . $exam->exam_file);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
         }
+
+        // ২. ডাটাবেজ থেকে রেকর্ড ডিলিট করা
         $exam->delete();
-        Toastr()->success('Exam File Delete Successfully!');
-        return redirect()->back();
+
+        return back()->with('success', 'পরীক্ষার ফাইলটি চিরতরে ডিলিট করা হয়েছে।');
     }
 }

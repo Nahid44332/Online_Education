@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\LiveClass;
+use App\Models\Settings;
 use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 
@@ -25,7 +28,8 @@ class StudentController extends Controller
     {
         $student = Auth::guard('student')->user();
         $courses = Course::where('id', $student->course_id)->get();
-        return view('backend.student-panel.dashboard', compact('student', 'courses'));
+        $my_tl = DB::table('team_leaders')->where('id', $student->team_leader_id)->first();
+        return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl'));
     }
 
     public function logout(Request $request)
@@ -148,16 +152,41 @@ class StudentController extends Controller
 
     public function myExams()
     {
-        // ১. স্টুডেন্ট ডাটা নিন
         $student = auth()->guard('student')->user();
 
-        // ২. এক্সাম ডাটা নিন
         $exams = \App\Models\Exam::where('course_id', $student->course_id)
+            ->where('status', 'approved')
             ->with('teacher')
             ->latest()
             ->get();
 
-        // ৩. ভিউতে 'student' ভেরিয়েবলটি পাস করুন
         return view('backend.student-panel.exams.exams', compact('exams', 'student'));
+    }
+
+    public function myCertificates()
+    {
+        $student = auth()->guard('student')->user();
+
+        // স্টুডেন্টের সব সার্টিফিকেট নিয়ে আসা (কোর্স রিলেশনসহ)
+        $certificates = \App\Models\Certificate::where('student_id', $student->id)
+            ->with('course')
+            ->latest()
+            ->get();
+        $student = auth()->guard('student')->user();
+        return view('backend.student-panel.certificates.certificates', compact('certificates', 'student'));
+    }
+
+     public function downloadCertificate($id)
+    {
+        $certificate = Certificate::with(['student', 'course', 'result'])->findOrFail($id);
+
+        // সাইট সেটিংস আলাদাভাবে পাস করতে হতে পারে যদি সেটি গ্লোবাল না হয়
+        $sitesettings = Settings::first();
+
+        $pdf = Pdf::loadView('backend.certificate.certificate-pdf', compact('certificate', 'sitesettings'))
+            ->setPaper('a4', 'landscape')
+            ->setOption(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
+
+        return $pdf->download('Certificate_' . $certificate->student->name . '.pdf');
     }
 }

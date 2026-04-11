@@ -23,7 +23,7 @@
         </li>
 
         <!-- Students -->
-         <li class="nav-item">
+        <li class="nav-item">
             <a class="nav-link" href="{{ url('/admin/student/list') }}">
                 <span class="menu-title">Students</span>
                 <i class="mdi mdi-account menu-icon"></i>
@@ -63,7 +63,35 @@
                 <i class="mdi mdi-book menu-icon"></i>
             </a>
         </li>
-
+        <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="collapse" href="#subadmin-panel" aria-expanded="false" aria-controls="subadmin-panel">
+        <span class="menu-title">Subadmin Panel</span>
+        <i class="menu-arrow"></i>
+        <i class="mdi mdi-account-group menu-icon"></i>
+    </a>
+    <div class="collapse" id="subadmin-panel">
+        <ul class="nav flex-column sub-menu">
+            <li class="nav-item">
+                <a class="nav-link" href="{{url('/admin/team-leader')}}"> Team Leader </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"> Senior Team Leader </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"> Counsellor </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"> Help-line </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"> Manager </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"> Managing Director </a>
+            </li>
+        </ul>
+    </div>
+</li>
         <!-- Payment -->
         <li class="nav-item">
             <a class="nav-link" href="{{ url('/admin/payment/list') }}">
@@ -114,17 +142,14 @@
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#exam-menu" aria-expanded="false"
                 aria-controls="exam-menu">
-                <span class="menu-title">Exam</span>
+                <span class="menu-title">Exam Management</span>
                 <i class="menu-arrow"></i>
-                <i class="mdi mdi-account-file-text menu-icon"></i>
+                <i class="mdi mdi-book-open-page-variant menu-icon"></i>
             </a>
             <div class="collapse" id="exam-menu">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/admin/exam') }}">Exam List</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/admin/exam/create') }}">Upload Exam File</a>
+                        <a class="nav-link" href="{{ route('admin.exam.list') }}"> All Exam List </a>
                     </li>
                 </ul>
             </div>

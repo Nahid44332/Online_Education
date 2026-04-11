@@ -42,12 +42,11 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('teacher.adminQuestions') }}">
-                <span class="menu-title">Exam</span>
+            <a class="nav-link" href="{{ route('exam.list') }}">
+                <span class="menu-title">Exam Management</span>
                 <i class="mdi mdi-file-document-edit menu-icon"></i>
             </a>
         </li>
-
 
         <li class="nav-item">
             <a class="nav-link" href="#">
@@ -55,6 +54,7 @@
                 <i class="mdi mdi-poll menu-icon"></i>
             </a>
         </li>
+
         <li class="nav-item">
             <a class="nav-link" href="{{ route('teacher.withdraw') }}">
                 <span class="menu-title">Withdraw</span>
@@ -68,6 +68,7 @@
                 <i class="mdi mdi-history menu-icon"></i>
             </a>
         </li>
+
         <li class="nav-item">
             <a class="nav-link" href="#">
                 <span class="menu-title">Notice Board</span>
@@ -90,3 +91,12 @@
         </li>
     </ul>
 </nav>
+<script src="{{ asset('path-to-your-js/bootstrap.bundle.min.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        $('[data-bs-toggle="collapse"]').click(function() {
+            var target = $(this).attr('href');
+            $(target).collapse('toggle');
+        });
+    });
+</script>
