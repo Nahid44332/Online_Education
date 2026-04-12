@@ -121,7 +121,7 @@
                         <a class="nav-link" href="#">Trainer Withdraw</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Team Leader Withdraw</a>
+                        <a class="nav-link" href="{{route('admin.team_leader.withdraw.requests')}}">Team Leader Withdraw</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('admin.withdraw.requests') }}">Teacher Withdraw</a>

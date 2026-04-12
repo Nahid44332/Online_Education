@@ -148,4 +148,73 @@ class SubadminController extends Controller
 
         return redirect()->back()->with('error', 'Student not found!');
     }
+
+    public function addTlPoints(Request $request)
+    {
+        $tl = DB::table('team_leaders')->where('id', $request->tl_id);
+        $currentTl = $tl->first();
+
+        if ($currentTl) {
+            $newPoints = $currentTl->points + $request->points;
+
+            // ১. মেইন পয়েন্ট আপডেট
+            $tl->update(['points' => $newPoints]);
+
+            // ২. ট্রানজেকশন টেবিলে ডাটা ইনসার্ট (এটা মিসিং ছিল)
+            DB::table('transactions')->insert([
+                'team_leader_id' => $request->tl_id,
+                'teacher_id'     => null, // টিচার আইডি নাল থাকবে
+                'amount'         => $request->points,
+                'type'           => 'credit',
+                'description'    => 'Admin added balance',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+
+            return back()->with('success', 'Points added and recorded successfully!');
+        }
+
+        return back()->with('error', 'Team Leader not found!');
+    }
+
+    public function withdrawRequests()
+    {
+        $requests = DB::table('withdrawals')
+            ->whereNotNull('team_leader_id') // শুধু টিম লিডারদের রিকোয়েস্ট
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('backend.subadmin-withdraw.team-leader-withdraw', compact('requests'));
+    }
+
+    public function approveWithdraw($id)
+    {
+        $withdraw = DB::table('withdrawals')->where('id', $id)->first();
+
+        if ($withdraw && $withdraw->status == 'pending') {
+            $tl = DB::table('team_leaders')->where('id', $withdraw->team_leader_id)->first();
+
+            if ($tl->points < $withdraw->amount) {
+                return back()->with('error', 'টিম লিডারের ব্যালেন্স পর্যাপ্ত নয়!');
+            }
+            DB::table('withdrawals')->where('id', $id)->update([
+                'status' => 'approved',
+                'updated_at' => now()
+            ]);
+
+            DB::table('team_leaders')->where('id', $withdraw->team_leader_id)->decrement('points', $withdraw->amount);
+            DB::table('transactions')->insert([
+                'team_leader_id' => $withdraw->team_leader_id,
+                'amount'         => $withdraw->amount,
+                'type'           => 'debit', // টাকা কমে যাওয়া মানে ডেবিট
+                'description'    => 'উইথড্র এপ্রুভ করা হয়েছে (' . $withdraw->method . ')',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+
+            return back()->with('success', 'উইথড্র রিকোয়েস্ট এপ্রুভ হয়েছে এবং ব্যালেন্স কেটে নেওয়া হয়েছে!');
+        }
+
+        return back()->with('error', 'রিকোয়েস্টটি খুঁজে পাওয়া যায়নি বা অলরেডি এপ্রুভড!');
+    }
 }

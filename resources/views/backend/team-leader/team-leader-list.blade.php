@@ -24,13 +24,13 @@
                         @endif
 
                         <div class="table-responsive">
-                            <table class="table table-hover border-0">
-                                <thead class="bg-light">
+                            <table class="table table-hover border-0 align-middle">
+                                <thead class="bg-light text-center">
                                     <tr>
                                         <th>SL</th>
                                         <th>Image</th>
                                         <th>Name</th>
-                                        <th>Email</th>
+                                        <th style="width: 180px;">Wallet Points</th>
                                         <th>Phone</th>
                                         <th>Designation</th>
                                         <th>Action</th>
@@ -38,102 +38,95 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($team_leaders as $tl)
-                                        <tr>
+                                        <tr class="text-center">
                                             <td>{{ $loop->index + 1 }}</td>
                                             <td>
                                                 <img src="{{ asset('backend/images/team-leader/' . $tl->profile_image) }}"
-                                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"
+                                                    style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;"
                                                     alt="profile"
                                                     onerror="this.src='{{ asset('backend/images/faces/face1.jpg') }}'">
                                             </td>
-                                            <td><span class="fw-bold text-dark">{{ $tl->name }}</span></td>
-                                            <td>{{ $tl->subadmin->email ?? 'N/A' }}</td>
-                                            <td>{{ $tl->phone }}</td>
-                                            <td><label class="badge badge-info">{{ $tl->designation }}</label></td>
+                                            <td class="text-start">
+                                                <span class="fw-bold text-dark">{{ $tl->name }}</span><br>
+                                                <small class="text-muted">{{ $tl->subadmin->email ?? 'N/A' }}</small>
+                                            </td>
+                                            
+                                            {{-- স্যালারি/পয়েন্ট অ্যাড করার সেকশন --}}
                                             <td>
-                                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                                    data-bs-toggle="modal" data-bs-target="#editModal{{ $tl->id }}">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </button>
-                                                <a href="{{ route('admin.team_leader.delete', $tl->id) }}"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    onclick="return confirm('Are you sure you want to delete this Team Leader?')">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </a>
-                                                <a href="{{ url('/admin/team-leader/assign-student/' . $tl->id) }}"
-                                                    class="btn btn-sm btn-gradient-info">
-                                                    Assign Student
-                                                </a>
+                                                <div class="mb-1">
+                                                    <span class="badge bg-gradient-primary px-3 text-white" style="background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);">
+                                                        ৳ {{ number_format($tl->points ?? 0, 2) }}
+                                                    </span>
+                                                </div>
+                                                <form action="{{ route('admin.add.tl.points') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="tl_id" value="{{ $tl->id }}">
+                                                    <div class="input-group input-group-sm mt-1">
+                                                        <input type="number" name="points" class="form-control" placeholder="Amount" required>
+                                                        <button class="btn btn-success text-white" type="submit">
+                                                            <i class="mdi mdi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </td>
+
+                                            <td>{{ $tl->phone }}</td>
+                                            <td><label class="badge badge-outline-info">{{ $tl->designation }}</label></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        data-bs-toggle="modal" data-bs-target="#editModal{{ $tl->id }}">
+                                                        <i class="mdi mdi-pencil"></i>
+                                                    </button>
+                                                    <a href="{{ route('admin.team_leader.delete', $tl->id) }}"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Are you sure?')">
+                                                        <i class="mdi mdi-delete"></i>
+                                                    </a>
+                                                    <a href="{{ url('/admin/team-leader/assign-student/' . $tl->id) }}"
+                                                        class="btn btn-sm btn-info text-white shadow-sm" style="font-size: 11px;">
+                                                        Assign Student
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
 
-                                        <div class="modal fade" id="editModal{{ $tl->id }}" tabindex="-1"
-                                            aria-hidden="true">
+                                        {{-- Edit Team Leader Modal --}}
+                                        <div class="modal fade" id="editModal{{ $tl->id }}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog modal-lg">
                                                 <div class="modal-content" style="border-radius: 15px;">
-                                                    <div class="modal-header bg-primary">
-                                                        <h5 class="modal-title text-white"><i
-                                                                class="mdi mdi-pencil me-2"></i> Edit Team Leader:
-                                                            {{ $tl->name }}</h5>
-                                                        <button type="button" class="btn-close btn-close-white"
-                                                            data-bs-dismiss="modal"></button>
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title"><i class="mdi mdi-pencil me-2"></i> Edit Team Leader: {{ $tl->name }}</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body p-4 text-start">
-                                                        <form action="{{ route('admin.team_leader.update', $tl->id) }}"
-                                                            method="POST" enctype="multipart/form-data">
+                                                        <form action="{{ route('admin.team_leader.update', $tl->id) }}" method="POST" enctype="multipart/form-data">
                                                             @csrf
                                                             <div class="row">
                                                                 <div class="col-md-6 mb-3">
-                                                                    <label class="fw-bold small">Full Name <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" name="name"
-                                                                        class="form-control" value="{{ $tl->name }}"
-                                                                        required>
+                                                                    <label class="fw-bold small">Full Name <span class="text-danger">*</span></label>
+                                                                    <input type="text" name="name" class="form-control" value="{{ $tl->name }}" required>
                                                                 </div>
                                                                 <div class="col-md-6 mb-3">
                                                                     <label class="fw-bold small">Designation</label>
-                                                                    <input type="text" name="designation"
-                                                                        class="form-control"
-                                                                        value="{{ $tl->designation }}">
+                                                                    <input type="text" name="designation" class="form-control" value="{{ $tl->designation }}">
                                                                 </div>
                                                                 <div class="col-md-6 mb-3">
                                                                     <label class="fw-bold small">Phone</label>
-                                                                    <input type="text" name="phone"
-                                                                        class="form-control" value="{{ $tl->phone }}">
+                                                                    <input type="text" name="phone" class="form-control" value="{{ $tl->phone }}">
                                                                 </div>
                                                                 <div class="col-md-6 mb-3">
                                                                     <label class="fw-bold small">Blood Group</label>
                                                                     <select name="blood" class="form-control">
-                                                                        <option value="" disabled>Select</option>
-                                                                        <option value="A+"
-                                                                            {{ $tl->blood == 'A+' ? 'selected' : '' }}>A+
-                                                                        </option>
-                                                                        <option value="B+"
-                                                                            {{ $tl->blood == 'B+' ? 'selected' : '' }}>B+
-                                                                        </option>
-                                                                        <option value="O+"
-                                                                            {{ $tl->blood == 'O+' ? 'selected' : '' }}>O+
-                                                                        </option>
-                                                                        <option value="AB+"
-                                                                            {{ $tl->blood == 'AB+' ? 'selected' : '' }}>AB+
-                                                                        </option>
+                                                                        <option value="A+" {{ $tl->blood == 'A+' ? 'selected' : '' }}>A+</option>
+                                                                        <option value="B+" {{ $tl->blood == 'B+' ? 'selected' : '' }}>B+</option>
+                                                                        <option value="O+" {{ $tl->blood == 'O+' ? 'selected' : '' }}>O+</option>
+                                                                        <option value="AB+" {{ $tl->blood == 'AB+' ? 'selected' : '' }}>AB+</option>
                                                                     </select>
                                                                 </div>
-                                                                <div class="col-md-12 mb-3">
-                                                                    <label class="fw-bold small">Profile Image (আগে দিলে
-                                                                        পরিবর্তন করার দরকার নেই)</label>
-                                                                    <input type="file" name="profile_image"
-                                                                        class="form-control mb-2">
-                                                                    <img src="{{ asset('backend/images/team-leader/' . $tl->profile_image) }}"
-                                                                        style="width: 60px; height: 60px; border-radius: 5px; object-fit: cover;"
-                                                                        onerror="this.src='{{ asset('backend/images/faces/face1.jpg') }}'">
-                                                                </div>
-                                                                <div class="col-12 text-end">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Cancel</button>
-                                                                    <button type="submit"
-                                                                        class="btn btn-primary px-4 shadow-sm">Update Team
-                                                                        Leader</button>
+                                                                <div class="col-12 text-end mt-3">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                    <button type="submit" class="btn btn-primary px-4">Update Changes</button>
                                                                 </div>
                                                             </div>
                                                         </form>
@@ -151,75 +144,39 @@
         </div>
     </div>
 
-    <div class="modal fade" id="addTeamLeaderModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
+    {{-- Add Team Leader Modal --}}
+    <div class="modal fade" id="addTeamLeaderModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="border-radius: 15px;">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="exampleModalLabel text-white">
-                        <i class="mdi mdi-account-plus me-2 text-white"></i> Create New Team Leader
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <h5 class="modal-title"><i class="mdi mdi-account-plus me-2 text-white"></i> Create New Team Leader</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form action="{{ route('admin.team_leader.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            <div class="col-12 mb-3">
-                                <h6 class="text-primary border-bottom pb-2">🔑 Login Credentials</h6>
-                            </div>
                             <div class="col-md-6 mb-3">
                                 <label class="fw-bold small">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control" placeholder="tl@example.com"
-                                    required>
+                                <input type="email" name="email" class="form-control" placeholder="tl@example.com" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="fw-bold small">Password <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control"
-                                    placeholder="Min 6 characters" required>
-                            </div>
-
-                            <div class="col-12 mt-2 mb-3">
-                                <h6 class="text-primary border-bottom pb-2">👤 Personal Information</h6>
+                                <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="fw-bold small">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" placeholder="Enter Full Name"
-                                    required>
+                                <input type="text" name="name" class="form-control" placeholder="Enter Full Name" required>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="fw-bold small">Designation</label>
                                 <input type="text" name="designation" class="form-control" placeholder="Ex: Lead">
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="fw-bold small">Phone</label>
                                 <input type="text" name="phone" class="form-control" placeholder="017XXXXXXXX">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="fw-bold small">Date of Birth</label>
-                                <input type="date" name="dob" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="fw-bold small">Blood Group</label>
-                                <select name="blood" class="form-control">
-                                    <option value="">Select</option>
-                                    <option value="A+">A+</option>
-                                    <option value="B+">B+</option>
-                                    <option value="O+">O+</option>
-                                    <option value="AB+">AB+</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="fw-bold small">Facebook Link</label>
-                                <input type="url" name="facebook_link" class="form-control" placeholder="https://">
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="fw-bold small">Profile Image</label>
-                                <input type="file" name="profile_image" class="form-control">
-                            </div>
-
-                            <div class="col-12 mt-3 text-end">
+                            <div class="col-md-12 mb-3 text-end">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Team Leader</button>
                             </div>

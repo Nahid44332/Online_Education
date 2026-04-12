@@ -218,6 +218,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/team-leader/delete/{id}', [SubadminController::class, 'deleteTeamLeader'])->name('admin.team_leader.delete');
     Route::get('/team-leader/assign-student/{id}', [SubadminController::class, 'assignStudentPage'])->name('admin.assign_page');
     Route::get('/team-leader/add-to-team/{tl_id}/{student_id}', [SubadminController::class, 'confirmAssign'])->name('admin.do_assign');
+    Route::post('/admin/team-leader/add-points', [SubadminController::class, 'addTlPoints'])->name('admin.add.tl.points');
+    Route::get('/admin/withdraw/requests', [SubadminController::class, 'withdrawRequests'])->name('admin.team_leader.withdraw.requests');
+    Route::post('/admin/withdraw/approve/{id}', [SubadminController::class, 'approveWithdraw'])->name('admin.team_leader.withdraw.approve');
 });
 
 
@@ -285,5 +288,9 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
     Route::group(['middleware' => 'subadmin.role:team_leader'], function () {    
         Route::get('/team-leader/dashboard', [TeamLeaderPanelController::class, 'dashboard'])->name('team_leader.dashboard');
         Route::get('/team-leader/my-students', [TeamLeaderPanelController::class, 'myStudents'])->name('team_leader.students');
+        Route::get('/team-leader/transactions', [TeamLeaderPanelController::class, 'transactions'])->name('team_leader.transactions');
+        Route::get('/team-leader/withdraw', [TeamLeaderPanelController::class, 'withdraw'])->name('team_leader.withdraw');
+        Route::post('/team-leader/withdraw-request', [TeamLeaderPanelController::class, 'withdrawStore'])->name('team_leader.withdraw.store');
+        Route::get('/team-leader/withdraw-history', [TeamLeaderPanelController::class, 'withdrawHistory'])->name('team_leader.withdraw.history');
     });
 });

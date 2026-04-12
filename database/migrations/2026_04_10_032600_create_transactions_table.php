@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('teacher_id');
-            $table->integer('amount'); // পয়েন্টের পরিমাণ
-            $table->enum('type', ['credit', 'debit']); // credit = আয়, debit = ব্যয়/উইথড্র
-            $table->string('description'); // যেমন: "Salary", "Withdrawal approved", "Course Bonus"
+            $table->unsignedBigInteger('teacher_id')->nullable();
+            $table->integer('team_leader_id')->nullable();
+            $table->integer('amount');
+            $table->enum('type', ['credit', 'debit']);
+            $table->string('description');
             $table->timestamps();
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade');
         });

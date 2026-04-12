@@ -22,7 +22,8 @@
                     <th>SL</th>
                     <th>Image</th>
                     <th>Name</th>
-                    <th>Salary Points</th> <th>Designation</th>
+                    <th>Salary Points</th> 
+                    <th>Designation</th>
                     <th>Actions</th>
                 </tr>
             </thead>

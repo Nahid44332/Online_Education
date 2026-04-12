@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('subadmin_id');
             $table->string('name');
             $table->string('designation')->nullable();
+            $table->integer('points')->default(0);
             $table->string('phone')->nullable();
             $table->string('dob')->nullable();
             $table->string('blood')->nullable();

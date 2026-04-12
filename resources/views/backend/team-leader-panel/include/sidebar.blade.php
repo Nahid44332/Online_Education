@@ -1,23 +1,38 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            @if(Auth::guard('subadmin')->check())
+            @if (Auth::guard('subadmin')->check())
                 <a href="#" class="nav-link">
                     <div class="nav-profile-image">
                         {{-- টিম লিডারের ইমেজ ডাইনামিক করা --}}
-                        <img src="{{ asset('backend/images/team-leader/' . ($tl_data->profile_image ?? 'default.png')) }}" alt="profile" />
+                        <img src="{{ asset('backend/images/team-leader/' . ($tl_data->profile_image ?? 'default.png')) }}"
+                            alt="profile" />
                         <span class="login-status online"></span>
                     </div>
                     <div class="nav-profile-text d-flex flex-column">
-                        <span class="font-weight-bold mb-2">{{ Auth::guard('subadmin')->user()->name }}</span>
-                        <span class="text-secondary text-small">{{ ucfirst(Auth::guard('subadmin')->user()->position) }}</span>
+                        <span class="font-weight-bold mb-2 text-dark" style="font-size: 15px;">
+                            {{ Auth::guard('subadmin')->user()->name }}
+                        </span>
+
+                        <div class="d-flex align-items-center">
+                            {{-- পজিশন --}}
+                            <span class="text-secondary text-small me-2">
+                                {{ ucfirst(Auth::guard('subadmin')->user()->position == 'team_leader' ? 'Team Leader' : Auth::guard('subadmin')->user()->position) }}
+                            </span>
+
+                            {{-- স্টাইলিশ আইডি ব্যাজ --}}
+                            <span class="badge bg-primary text-white border-0 shadow-sm"
+                                style="font-size: 10px; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.5px;">
+                                ID:
+                                {{ DB::table('team_leaders')->where('subadmin_id', Auth::guard('subadmin')->id())->value('id') }}
+                            </span>
+                        </div>
                     </div>
                 </a>
             @endif
         </li>
 
-        @if(Auth::guard('subadmin')->check() && Auth::guard('subadmin')->user()->position == 'team_leader')
-            
+        @if (Auth::guard('subadmin')->check() && Auth::guard('subadmin')->user()->position == 'team_leader')
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('team_leader.dashboard') }}">
                     <span class="menu-title">Dashboard</span>
@@ -26,7 +41,8 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#student-menu" aria-expanded="false" aria-controls="student-menu">
+                <a class="nav-link" data-bs-toggle="collapse" href="#student-menu" aria-expanded="false"
+                    aria-controls="student-menu">
                     <span class="menu-title">My Students</span>
                     <i class="menu-arrow"></i>
                     <i class="mdi mdi-account-multiple menu-icon"></i>
@@ -41,14 +57,15 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{{ route('team_leader.transactions') }}">
                     <span class="menu-title">My Earnings</span>
                     <i class="mdi mdi-currency-bdt menu-icon"></i>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#withdraw-menu" aria-expanded="false" aria-controls="withdraw-menu">
+                <a class="nav-link" data-bs-toggle="collapse" href="#withdraw-menu" aria-expanded="false"
+                    aria-controls="withdraw-menu">
                     <span class="menu-title">Withdraw</span>
                     <i class="menu-arrow"></i>
                     <i class="mdi mdi-cash-multiple menu-icon"></i>
@@ -56,10 +73,10 @@
                 <div class="collapse" id="withdraw-menu">
                     <ul class="nav flex-column sub-menu">
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Withdraw Request</a>
+                            <a class="nav-link" href="{{ route('team_leader.withdraw') }}">Withdraw Request</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Withdraw History</a>
+                            <a class="nav-link" href="{{ route('team_leader.withdraw.history') }}">Withdraw History</a>
                         </li>
                     </ul>
                 </div>
@@ -71,10 +88,9 @@
                     <i class="mdi mdi-bulletin-board menu-icon"></i>
                 </a>
             </li>
-
         @endif
 
-        {{-- এখানে আপনার আগের এডমিন মেনুগুলো থাকবে, যেগুলোকে @if(Auth::guard('admin')->check()) দিয়ে ঘিরে দিতে পারেন --}}
-        
+        {{-- এখানে আপনার আগের এডমিন মেনুগুলো থাকবে, যেগুলোকে @if (Auth::guard('admin')->check()) দিয়ে ঘিরে দিতে পারেন --}}
+
     </ul>
 </nav>
