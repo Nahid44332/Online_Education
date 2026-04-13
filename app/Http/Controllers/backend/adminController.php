@@ -14,6 +14,7 @@ use App\Models\ReferralHistory;
 use App\Models\Transaction;
 use App\Models\WithdrawRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class adminController extends Controller
 {
@@ -58,48 +59,46 @@ class adminController extends Controller
 
     public function updateStatus($id)
     {
-        $student = Student::with('lock')->findOrFail($id);
+        // Eloquent এর বদলে DB ট্রানজেকশন ইউজ করা ভালো যাতে সব ডাটা একসাথে সেভ হয়
+        DB::beginTransaction();
+        try {
+            $student = Student::with('lock')->findOrFail($id);
 
-        // 🔒 Locked check
-        if ($student->lock && $student->lock->is_locked) {
-            return redirect()->back()->with('error', 'This student is locked. Unlock first!');
-        }
+            // 🔒 Locked check
+            if ($student->lock && $student->lock->is_locked) {
+                return redirect()->back()->with('error', 'This student is locked. Unlock first!');
+            }
 
-        $oldStatus = $student->status;
+            $oldStatus = $student->status;
+            $student->status = !$student->status;
+            $student->save();
 
-        $student->status = !$student->status;
-        $student->save();
+            // কন্ডিশন: শুধুমাত্র যখন স্টুডেন্ট ইন-অ্যাক্টিভ (0) থেকে অ্যাক্টিভ (1) হবে
+            if ($oldStatus == 0 && $student->status == 1) {
 
-        // Only inactive → active
-        if ($oldStatus == 0 && $student->status == 1) {
-
-            if ($student->referred_by) {
-
-                // referral_code দিয়ে referrer খুঁজবে
-                $referrer = Student::where('referral_code', $student->referred_by)->first();
-
-                if ($referrer) {
-
-                    // duplicate referral prevent
-                    $alreadyExists = ReferralHistory::where('referred_student_id', $student->id)->exists();
-
-                    if (!$alreadyExists) {
-
-                        ReferralHistory::create([
-                            'student_id' => $referrer->id,
-                            'referred_student_id' => $student->id,
-                            'points' => 120,
-                        ]);
-
-                        // referrer points update
-                        $referrer->points += 120;
-                        $referrer->save();
+                // --- ১. স্টুডেন্ট রেফারেল পার্ট (যেটা আগে থেকেই ছিল) ---
+                if ($student->referred_by) {
+                    $referrer = Student::where('referral_code', $student->referred_by)->first();
+                    if ($referrer) {
+                        $alreadyExists = ReferralHistory::where('referred_student_id', $student->id)->exists();
+                        if (!$alreadyExists) {
+                            ReferralHistory::create([
+                                'student_id' => $referrer->id,
+                                'referred_student_id' => $student->id,
+                                'points' => 120,
+                            ]);
+                            $referrer->increment('points', 120);
+                        }
                     }
                 }
             }
-        }
 
-        return redirect()->back()->with('success', 'Student status updated.');
+            DB::commit();
+            return redirect()->back()->with('success', 'Student status updated and commission processed.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'ঝামেলা হয়েছে মামা: ' . $e->getMessage());
+        }
     }
 
     public function deleteStudent($id)

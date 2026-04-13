@@ -72,6 +72,9 @@
     <div class="collapse" id="subadmin-panel">
         <ul class="nav flex-column sub-menu">
             <li class="nav-item">
+                <a class="nav-link" href="{{url('/admin/trainer')}}"> Trainer</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="{{url('/admin/team-leader')}}"> Team Leader </a>
             </li>
             <li class="nav-item">

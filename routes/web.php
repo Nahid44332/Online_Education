@@ -25,6 +25,7 @@ use App\Http\Controllers\backend\SettingController;
 use App\Http\Controllers\backend\SubadminController;
 use App\Http\Controllers\backend\teacher\TeacherPanelController;
 use App\Http\Controllers\backend\TeamLeaderPanelController;
+use App\Http\Controllers\backend\TrainerPanelController;
 use App\Http\Controllers\backend\WithdrawController;
 use App\Http\Controllers\ReferralController;
 
@@ -221,6 +222,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/admin/team-leader/add-points', [SubadminController::class, 'addTlPoints'])->name('admin.add.tl.points');
     Route::get('/admin/withdraw/requests', [SubadminController::class, 'withdrawRequests'])->name('admin.team_leader.withdraw.requests');
     Route::post('/admin/withdraw/approve/{id}', [SubadminController::class, 'approveWithdraw'])->name('admin.team_leader.withdraw.approve');
+    Route::get('/trainer', [SubadminController::class, 'trainer'])->name('admin.trainer_list');
+    Route::post('/add-trainer-points', [SubadminController::class, 'addTrainerPoints'])->name('admin.add.trainer.points');
 });
 
 
@@ -281,7 +284,6 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/exam/store', [TeacherPanelController::class, 'examStore'])->name('exam.store');
         Route::get('/exam/my-list', [TeacherPanelController::class, 'myExams'])->name('exam.list');
         Route::get('/panel/teacher/exam/delete/{id}', [TeacherPanelController::class, 'examDelete'])->name('exam.delete');
-        // টিচারের অন্য সব রাউট এখানে দাও
     });
 
     //Team Leader Panel Route
@@ -292,5 +294,24 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/team-leader/withdraw', [TeamLeaderPanelController::class, 'withdraw'])->name('team_leader.withdraw');
         Route::post('/team-leader/withdraw-request', [TeamLeaderPanelController::class, 'withdrawStore'])->name('team_leader.withdraw.store');
         Route::get('/team-leader/withdraw-history', [TeamLeaderPanelController::class, 'withdrawHistory'])->name('team_leader.withdraw.history');
+        Route::post('/team-leader/gift-points', [TeamLeaderPanelController::class, 'giftPoints'])->name('team_leader.gift.points');
+        Route::get('/trainers', [TeamLeaderPanelController::class, 'trainer'])->name('team_leader.trainers.list');
+        Route::get('/trainers/create', [TeamLeaderPanelController::class, 'create'])->name('team_leader.trainers.create');
+        Route::post('/trainers/store', [TeamLeaderPanelController::class, 'store'])->name('team_leader.trainers.store');
+        Route::get('/trainers/assign/{id}', [TeamLeaderPanelController::class, 'assignPage'])->name('team_leader.trainers.assign');
+        Route::post('/trainers/assign-process', [TeamLeaderPanelController::class, 'assignProcess'])->name('team_leader.trainers.assignProcess');
+        Route::put('/trainers/update/{id}', [TeamLeaderPanelController::class, 'update'])->name('team_leader.trainers.update');
+        Route::delete('/trainers/delete/{id}', [TeamLeaderPanelController::class, 'destroy'])->name('team_leader.trainers.delete');
+    });
+
+    // Trainer Panel Route
+    Route::group(['middleware' => 'subadmin.role:trainer'], function () {    
+        Route::get('/trainer/dashboard', [TrainerPanelController::class, 'dashboard'])->name('trainer.dashboard');
+        Route::get('/trainer/students', [TrainerPanelController::class, 'studentList'])->name('trainer.stdent.list');
+        Route::get('/trainer/profile', [TrainerPanelController::class, 'profile'])->name('trainer.profile');
+        Route::get('/trainer/profile/edit', [TrainerPanelController::class, 'profileEdit'])->name('trainer.profile.edit');
+        Route::post('/trainer/profile/update', [TrainerPanelController::class, 'profileUpdate'])->name('trainer.profile.update');
+        Route::get('/trainer/change-password', [TrainerPanelController::class, 'changePassword'])->name('trainer.password.change');
+        Route::post('/trainer/update-password', [TrainerPanelController::class, 'updatePassword'])->name('trainer.password.update');
     });
 });

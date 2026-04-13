@@ -5,6 +5,7 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\Subadmin;
 use App\Models\TeamLeader;
+use App\Models\Trainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -217,4 +218,42 @@ class SubadminController extends Controller
 
         return back()->with('error', 'রিকোয়েস্টটি খুঁজে পাওয়া যায়নি বা অলরেডি এপ্রুভড!');
     }
+
+    //=============Trainer====================//
+
+    public function trainer()
+    {
+        $trainers = Trainer::with('subadmin')->orderBy('id', 'desc')->get();
+        return view('backend.trainer.trainer-list', compact('trainers'));
+    }
+
+    public function addTrainerPoints(Request $request)
+{
+    // ১. সরাসরি ট্রেইনার কুয়েরি
+    $trainerQuery = DB::table('trainers')->where('id', $request->trainer_id);
+    $currentTrainer = $trainerQuery->first();
+
+    if ($currentTrainer) {
+        $newPoints = $currentTrainer->points + $request->amount;
+
+        // ২. ট্রেইনারের মেইন পয়েন্ট আপডেট
+        $trainerQuery->update(['points' => $newPoints]);
+
+        // ৩. ট্রানজেকশন টেবিলে নতুন trainer_id কলামে ডাটা ইনসার্ট
+        DB::table('transactions')->insert([
+            'teacher_id'     => null,
+            'team_leader_id' => null,
+            'trainer_id'     => $request->trainer_id, // এবার আসল আইডিতেই বাড়ি!
+            'amount'         => $request->amount,
+            'type'           => 'credit',
+            'description'    => 'Admin added salary/points',
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        return back()->with('success', 'Trainer wallet updated and recorded!');
+    }
+
+    return back()->with('error', 'Trainer not found!');
+}
 }

@@ -217,4 +217,5 @@ class TeacherPanelController extends Controller
 
         return back()->with('success', 'পরীক্ষার ফাইলটি সফলভাবে ডিলিট করা হয়েছে।');
     }
+
 }

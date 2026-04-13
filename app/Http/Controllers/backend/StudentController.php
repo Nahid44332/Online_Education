@@ -25,12 +25,19 @@ class StudentController extends Controller
 
 
     public function dashboard()
-    {
-        $student = Auth::guard('student')->user();
-        $courses = Course::where('id', $student->course_id)->get();
-        $my_tl = DB::table('team_leaders')->where('id', $student->team_leader_id)->first();
-        return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl'));
-    }
+{
+    $student = Auth::guard('student')->user();
+    $courses = Course::where('id', $student->course_id)->get();
+    $my_tl = DB::table('team_leaders')->where('id', $student->team_leader_id)->first();
+    $gifts = DB::table('transactions')
+                ->where('description', 'LIKE', '%' . $student->name . '%')
+                ->where('type', 'debit')
+                ->orderBy('created_at', 'desc')
+                ->get();
+    $my_trainer = DB::table('trainers')->where('id', $student->trainer_id)->first();
+
+    return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer'));
+}
 
     public function logout(Request $request)
     {

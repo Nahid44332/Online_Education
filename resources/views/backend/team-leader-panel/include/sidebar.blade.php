@@ -57,6 +57,25 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#trainer-menu" aria-expanded="false"
+                    aria-controls="trainer-menu">
+                    <span class="menu-title">Manage Trainers</span>
+                    <i class="menu-arrow"></i>
+                    <i class="mdi mdi-account-star menu-icon"></i>
+                </a>
+                <div class="collapse" id="trainer-menu">
+                    <ul class="nav flex-column sub-menu">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('team_leader.trainers.list')}}">Trainer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('team_leader.trainers.create')}}">Create Trainer</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('team_leader.transactions') }}">
                     <span class="menu-title">My Earnings</span>
                     <i class="mdi mdi-currency-bdt menu-icon"></i>

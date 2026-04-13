@@ -57,8 +57,8 @@
                 <div class="card-body">
                     <h4 class="card-title text-dark">Quick Actions</h4>
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="#" class="btn btn-gradient-info btn-sm">View Students</a>
-                        <a href="#" class="btn btn-gradient-success btn-sm">Withdraw History</a>
+                        <a href="{{route('team_leader.students')}}" class="btn btn-gradient-info btn-sm">View Students</a>
+                        <a href="{{route('team_leader.withdraw.history')}}" class="btn btn-gradient-success btn-sm">Withdraw History</a>
                     </div>
                 </div>
             </div>
