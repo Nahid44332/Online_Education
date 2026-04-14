@@ -65,7 +65,7 @@
 
                 <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
                     <a class="dropdown-item"
-                        href="{{ Auth::guard('subadmin')->check() ? '#' : url('/admin/profile') }}">
+                        href="{{route('team_leader.profile')}}">
                         <i class="mdi mdi-account me-2 text-success"></i> Profile
                     </a>
                     <div class="dropdown-divider"></div>

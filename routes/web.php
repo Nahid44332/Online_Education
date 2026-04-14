@@ -305,6 +305,8 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/trainers/assign-process', [TeamLeaderPanelController::class, 'assignProcess'])->name('team_leader.trainers.assignProcess');
         Route::put('/trainers/update/{id}', [TeamLeaderPanelController::class, 'update'])->name('team_leader.trainers.update');
         Route::delete('/trainers/delete/{id}', [TeamLeaderPanelController::class, 'destroy'])->name('team_leader.trainers.delete');
+        Route::get('/profile', [TeamLeaderPanelController::class, 'profile'])->name('team_leader.profile');
+    Route::post('/profile/password', [TeamLeaderPanelController::class, 'updatePassword'])->name('team_leader.password.update');
     });
 
     // Trainer Panel Route
@@ -318,5 +320,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/trainer/update-password', [TrainerPanelController::class, 'updatePassword'])->name('trainer.password.update');
         Route::get('/trainer/withdraw', [TrainerPanelController::class, 'withdraw'])->name('trainer.withdraw');
         Route::post('/trainer/withdraw/store', [TrainerPanelController::class, 'withdrawStore'])->name('trainer.withdraw.store');
+        Route::post('/trainer/gift-points', [TrainerPanelController::class, 'giftPoints'])->name('trainer.gift.points');
+        Route::get('/trainer/transactions', [TrainerPanelController::class, 'transactions'])->name('trainer.transactions');
     });
 });

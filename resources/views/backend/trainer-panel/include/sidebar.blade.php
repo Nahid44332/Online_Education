@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="{{route('trainer.profile')}}" class="nav-link">
+            <a href="{{ route('trainer.profile') }}" class="nav-link">
                 <div class="nav-profile-image">
                     <img src="{{ asset('backend/images/trainer/' . Auth::guard('subadmin')->user()->trainer->profile_image) }}"
                         alt="profile" />
@@ -30,14 +30,21 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="{{route('trainer.stdent.list')}}">
+            <a class="nav-link" href="{{ route('trainer.stdent.list') }}">
                 <span class="menu-title">My Students</span>
                 <i class="mdi mdi-account-multiple menu-icon"></i>
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="{{route('trainer.withdraw')}}">
+            <a class="nav-link" href="{{ route('trainer.transactions') }}">
+                <span class="menu-title">My Earnings</span>
+                <i class="mdi mdi-cash-multiple menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('trainer.withdraw') }}">
                 <span class="menu-title">Withdraw</span>
                 <i class="mdi mdi-cash menu-icon"></i>
             </a>

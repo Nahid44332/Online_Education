@@ -64,8 +64,7 @@
                         <h4 class="card-title text-dark">Quick Actions</h4>
                         <div class="d-flex flex-wrap gap-2">
                             <a href="{{ route('trainer.stdent.list') }}" class="btn btn-gradient-info btn-sm">View My Students</a>
-                            <a href="{{ route('teacher.withdraw') }}" class="btn btn-gradient-success btn-sm">Withdraw Request</a>
-                            <a href="{{ route('teacher.live-class') }}" class="btn btn-gradient-primary btn-sm">Manage Live Class</a>
+                            <a href="{{ route('trainer.withdraw') }}" class="btn btn-gradient-success btn-sm">Withdraw Request</a>
                         </div>
                     </div>
                 </div>

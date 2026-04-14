@@ -2,7 +2,7 @@
     <ul class="nav">
         <li class="nav-item nav-profile">
             @if (Auth::guard('subadmin')->check())
-                <a href="#" class="nav-link">
+                <a href="{{route('team_leader.profile')}}" class="nav-link">
                     <div class="nav-profile-image">
                         {{-- টিম লিডারের ইমেজ ডাইনামিক করা --}}
                         <img src="{{ asset('backend/images/team-leader/' . ($tl_data->profile_image ?? 'default.png')) }}"

@@ -117,26 +117,26 @@ class TrainerPanelController extends Controller
     }
 
     public function withdraw()
-{
-    // ১. লগইন করা সাবএডমিনের ডাটা আনা
-    $user = Auth::guard('subadmin')->user();
+    {
+        // ১. লগইন করা সাবএডমিনের ডাটা আনা
+        $user = Auth::guard('subadmin')->user();
 
-    // ২. ট্রেইনার টেবিল থেকে তার বর্তমান পয়েন্ট নিয়ে আসা
-    // এখানে ভেরিয়েবল নাম $trainer
-    $trainer = DB::table('trainers')->where('subadmin_id', $user->id)->first();
+        // ২. ট্রেইনার টেবিল থেকে তার বর্তমান পয়েন্ট নিয়ে আসা
+        // এখানে ভেরিয়েবল নাম $trainer
+        $trainer = DB::table('trainers')->where('subadmin_id', $user->id)->first();
 
-    // এখানে ভুল ছিল: $tr_data এর বদলে $trainer হবে
-    $current_points = $trainer->points ?? 0; 
+        // এখানে ভুল ছিল: $tr_data এর বদলে $trainer হবে
+        $current_points = $trainer->points ?? 0;
 
-    // ৩. এই ট্রেইনারের আগের উইথড্র হিস্ট্রি আনা
-    $withdrawals = DB::table('withdrawals')
-        ->where('trainer_id', $trainer->id)
-        ->orderBy('id', 'desc')
-        ->get();
+        // ৩. এই ট্রেইনারের আগের উইথড্র হিস্ট্রি আনা
+        $withdrawals = DB::table('withdrawals')
+            ->where('trainer_id', $trainer->id)
+            ->orderBy('id', 'desc')
+            ->get();
 
-    // ৪. ভিউতে ডাটাগুলো পাঠিয়ে দেওয়া
-    return view('backend.trainer-panel.withdraw', compact('current_points', 'withdrawals'));
-}
+        // ৪. ভিউতে ডাটাগুলো পাঠিয়ে দেওয়া
+        return view('backend.trainer-panel.withdraw', compact('current_points', 'withdrawals'));
+    }
 
     public function withdrawStore(Request $request)
     {
@@ -170,5 +170,73 @@ class TrainerPanelController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'উইথড্র রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
+    }
+
+    public function giftPoints(Request $request)
+{
+    $request->validate([
+        'student_id' => 'required',
+        'points' => 'required|numeric|min:10'
+    ]);
+
+    // ১. বর্তমানে লগইন করা ট্রেইনারকে খুঁজে বের করা
+    $user = Auth::guard('subadmin')->user();
+    $trainer = DB::table('trainers')->where('subadmin_id', $user->id)->first();
+
+    if (!$trainer) {
+        return back()->with('error', 'মামা, আপনাকে তো ট্রেইনার হিসেবে খুঁজে পাওয়া যাচ্ছে না!');
+    }
+
+    // ২. ট্রেইনারের নিজের পয়েন্ট চেক করা
+    if ($trainer->points < $request->points) {
+        return back()->with('error', 'মামা, আপনার নিজের ব্যালেন্সে তো অত পয়েন্ট নাই!');
+    }
+
+    // ৩. স্টুডেন্ট চেক করা
+    $student = DB::table('students')->where('id', $request->student_id)->first();
+
+    if (!$student) {
+        return back()->with('error', 'এই স্টুডেন্টকে তো খুঁজে পাওয়া যাচ্ছে না!');
+    }
+
+    DB::beginTransaction();
+    try {
+        // ৪. ট্রেইনারের পয়েন্ট কমানো
+        DB::table('trainers')->where('id', $trainer->id)->decrement('points', $request->points);
+
+        // ৫. স্টুডেন্টের পয়েন্ট বাড়ানো
+        DB::table('students')->where('id', $student->id)->increment('points', $request->points);
+
+        // ৬. লেনদেনের ইতিহাস (Transaction Table)
+        DB::table('transactions')->insert([
+            'trainer_id'     => $trainer->id,
+            'team_leader_id' => $trainer->team_leader_id, // যদি ট্রেইনারের টিএল আইডি থাকে, তবে এটি ফিল্টার করতে সুবিধা দেবে
+            'amount'         => $request->points,
+            'type'           => 'debit',
+            'description'    => "Gifted to Student: " . $student->name . " (By Trainer)",
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        DB::commit();
+        return back()->with('success', 'অভিনন্দন! স্টুডেন্টকে সফলভাবে পয়েন্ট গিফট করা হয়েছে।');
+    } catch (\Exception $e) {
+        DB::rollback();
+        return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
+    }
+}
+    public function transactions()
+    {
+        // লগইন করা ট্রেইনারের আইডি বের করা
+        $user = Auth::guard('subadmin')->user();
+        $trainer = DB::table('trainers')->where('subadmin_id', $user->id)->first();
+
+        // ট্রেইনারের লেনদেনগুলো নিয়ে আসা
+        $transactions = DB::table('transactions')
+            ->where('trainer_id', $trainer->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('backend.trainer-panel.transactions', compact('transactions'));
     }
 }

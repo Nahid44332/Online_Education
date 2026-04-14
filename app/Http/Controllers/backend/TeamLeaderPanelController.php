@@ -139,6 +139,35 @@ class TeamLeaderPanelController extends Controller
         }
     }
 
+    public function profile()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $tl_data = DB::table('team_leaders')->where('subadmin_id', $user->id)->first();
+        return view('backend.team-leader-panel.profile', compact( 'user', 'tl_data'));
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = Auth::guard('subadmin')->user();
+
+        // পুরাতন পাসওয়ার্ড চেক (সাব-অ্যাডমিন টেবিল থেকে)
+        if (!Hash::check($request->old_password, $user->password)) {
+            return back()->with('error', 'পুরাতন পাসওয়ার্ডটি সঠিক নয়!');
+        }
+
+        // নতুন পাসওয়ার্ড আপডেট
+        DB::table('subadmins')->where('id', $user->id)->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return back()->with('success', 'পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
+    }
+
 
     //===============Trainer Create===============//
 

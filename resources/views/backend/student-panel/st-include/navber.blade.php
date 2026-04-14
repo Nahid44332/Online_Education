@@ -32,8 +32,8 @@
                     </div>
                 </a>
                 <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
-                    <a class="dropdown-item" href="#">
-                        <i class="mdi mdi-cached me-2 text-success"></i> Activity Log </a>
+                    <a class="dropdown-item" href="{{ url('/student/profile') }}">
+                        <i class="mdi mdi-cached me-2 text-success"></i> Profile </a>
                     <div class="dropdown-divider"></div>
                     <form action="{{ route('student.logout') }}" method="POST">
                     @csrf
