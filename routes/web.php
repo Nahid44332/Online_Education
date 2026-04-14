@@ -287,6 +287,11 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/exam/store', [TeacherPanelController::class, 'examStore'])->name('exam.store');
         Route::get('/exam/my-list', [TeacherPanelController::class, 'myExams'])->name('exam.list');
         Route::get('/panel/teacher/exam/delete/{id}', [TeacherPanelController::class, 'examDelete'])->name('exam.delete');
+        Route::get('/teacher/profile', [TeacherPanelController::class, 'profile'])->name('teacher.view-profile');
+        Route::get('/teacher/profile/edit', [TeacherPanelController::class, 'editProfile'])->name('teacher.profile.edit');
+        Route::post('/teacher/profile/update-process', [TeacherPanelController::class, 'updateProfile'])->name('teacher.profile.update');
+        Route::post('/password/update', [TeacherPanelController::class, 'updatePassword'])->name('teacher.password.update');
+        Route::get('/teacher/student-results', [TeacherPanelController::class, 'studentResults'])->name('teacher.student.results');
     });
 
     //Team Leader Panel Route
@@ -306,6 +311,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::put('/trainers/update/{id}', [TeamLeaderPanelController::class, 'update'])->name('team_leader.trainers.update');
         Route::delete('/trainers/delete/{id}', [TeamLeaderPanelController::class, 'destroy'])->name('team_leader.trainers.delete');
         Route::get('/profile', [TeamLeaderPanelController::class, 'profile'])->name('team_leader.profile');
+        Route::post('/profile/update', [TeamLeaderPanelController::class, 'updateProfile'])->name('team_leader.profile.update');
     Route::post('/profile/password', [TeamLeaderPanelController::class, 'updatePassword'])->name('team_leader.password.update');
     });
 

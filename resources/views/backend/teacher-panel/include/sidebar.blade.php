@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="#" class="nav-link">
+            <a href="{{route('teacher.view-profile')}}" class="nav-link">
                 <div class="nav-profile-image">
                     @if (Auth::guard('subadmin')->user()->teacher)
                         <img src="{{ asset('backend/images/teachers/' . Auth::guard('subadmin')->user()->teacher->profile_image) }}"
@@ -49,7 +49,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('teacher.student.results')}}">
                 <span class="menu-title">Student Results</span>
                 <i class="mdi mdi-poll menu-icon"></i>
             </a>
@@ -77,7 +77,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('teacher.view-profile')}}">
                 <span class="menu-title">My Profile</span>
                 <i class="mdi mdi-account-cog menu-icon"></i>
             </a>

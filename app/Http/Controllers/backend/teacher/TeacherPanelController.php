@@ -7,6 +7,9 @@ use App\Models\Course;
 use App\Models\LiveClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 
 class TeacherPanelController extends Controller
 {
@@ -218,4 +221,101 @@ class TeacherPanelController extends Controller
         return back()->with('success', 'পরীক্ষার ফাইলটি সফলভাবে ডিলিট করা হয়েছে।');
     }
 
+    public function profile()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $teacher = DB::table('teachers')->where('subadmin_id', $user->id)->first();
+
+        return view('backend.teacher-panel.profile', compact('teacher', 'user'));
+    }
+
+    public function editProfile()
+    {
+        $teacher = Auth::guard('subadmin')->user()->teacher;
+        return view('backend.teacher-panel.edit-profile', compact('teacher'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        // ১. ডাটা ভ্যালিডেশন
+        $request->validate([
+            'name'          => 'required|string|max:255',
+            'phone'         => 'required|string|max:20',
+            'blood'         => 'nullable|string|max:5',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // সর্বোচ্চ ২ মেগাবাইট
+        ]);
+
+        // ২. লগইন করা টিচারকে খুঁজে বের করা
+        $teacher = Auth::guard('subadmin')->user()->teacher;
+
+        // ৩. বেসিক তথ্য আপডেট
+        $teacher->name  = $request->name;
+        $teacher->phone = $request->phone;
+        $teacher->blood = $request->blood;
+
+        // ৪. প্রোফাইল পিকচার হ্যান্ডেল করা
+        if ($request->hasFile('profile_image')) {
+
+            // পুরানো ইমেজ থাকলে সেটা ফোল্ডার থেকে ডিলিট করে দেওয়া (Clean up)
+            $oldImagePath = public_path('backend/images/teachers/' . $teacher->profile_image);
+            if (File::exists($oldImagePath) && $teacher->profile_image != 'default.png') {
+                File::delete($oldImagePath);
+            }
+
+            // নতুন ইমেজ সেভ করা
+            $image = $request->file('profile_image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('backend/images/teachers'), $imageName);
+
+            // ডাটাবেজে ইমেজের নাম রাখা
+            $teacher->profile_image = $imageName;
+        }
+
+        // ৫. সেভ করা
+        $teacher->save();
+
+        return redirect()->route('teacher.view-profile')->with('success', 'মামা, প্রোফাইল একদম সাকসেসফুলি আপডেট হয়েছে!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required',
+            'password' => 'required|confirmed|min:6', // password_confirmation ইনপুট ফিল্ড থাকতে হবে
+        ]);
+
+        $user = auth()->user(); // আপনার সাব-অ্যাডমিন গার্ড থেকে ইউজার
+
+        // পুরানো পাসওয়ার্ড চেক
+        if (!Hash::check($request->old_password, $user->password)) {
+            return back()->with('error', 'মামা, পুরানো পাসওয়ার্ড তো মিললো না!');
+        }
+
+        // নতুন পাসওয়ার্ড আপডেট
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return back()->with('success', 'পাসওয়ার্ড একদম কড়কড়ে নতুন হয়ে গেছে!');
+    }
+
+   public function studentResults()
+{
+    $subadmin = Auth::guard('subadmin')->user();
+    $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+    // ১. এই টিচারের আন্ডারে থাকা কোর্সের আইডিগুলো নিন
+    $courseIds = \App\Models\Course::where('teacher_id', $teacher->id)->pluck('id');
+
+    // ২. রেজাল্ট ফিল্টার (স্টুডেন্টের কোর্স আইডি ধরে)
+    $results = \App\Models\Result::whereHas('student', function($query) use ($courseIds) {
+        // স্টুডেন্ট টেবিলের course_id যদি টিচারের কোর্স আইডিগুলোর মধ্যে থাকে
+        $query->whereIn('course_id', $courseIds); 
+    })
+    ->with(['student'])
+    ->latest()
+    ->get();
+
+    return view('backend.teacher-panel.student-results', compact('results'));
+}
 }

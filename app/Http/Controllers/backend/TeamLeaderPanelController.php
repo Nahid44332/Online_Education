@@ -168,6 +168,31 @@ class TeamLeaderPanelController extends Controller
         return back()->with('success', 'পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
     }
 
+    public function updateProfile(Request $request)
+{
+    $user = Auth::guard('subadmin')->user();
+    $tl = DB::table('team_leaders')->where('subadmin_id', $user->id)->first();
+
+    $data = [
+        'name' => $request->name,
+        'phone' => $request->phone,
+        'dob' => $request->dob,
+        'blood' => $request->blood,
+        'updated_at' => now(),
+    ];
+
+    // ইমেজ হ্যান্ডলিং
+    if ($request->hasFile('profile_image')) {
+        $imageName = time().'.'.$request->profile_image->extension();
+        $request->profile_image->move(public_path('backend/images/team_leader'), $imageName);
+        $data['profile_image'] = $imageName;
+    }
+
+    DB::table('team_leaders')->where('id', $tl->id)->update($data);
+
+    return back()->with('success', 'প্রোফাইল সফলভাবে আপডেট হয়েছে!');
+}
+
 
     //===============Trainer Create===============//
 
