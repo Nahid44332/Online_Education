@@ -115,4 +115,60 @@ class TrainerPanelController extends Controller
 
         return back()->with('success', 'পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!');
     }
+
+    public function withdraw()
+{
+    // ১. লগইন করা সাবএডমিনের ডাটা আনা
+    $user = Auth::guard('subadmin')->user();
+
+    // ২. ট্রেইনার টেবিল থেকে তার বর্তমান পয়েন্ট নিয়ে আসা
+    // এখানে ভেরিয়েবল নাম $trainer
+    $trainer = DB::table('trainers')->where('subadmin_id', $user->id)->first();
+
+    // এখানে ভুল ছিল: $tr_data এর বদলে $trainer হবে
+    $current_points = $trainer->points ?? 0; 
+
+    // ৩. এই ট্রেইনারের আগের উইথড্র হিস্ট্রি আনা
+    $withdrawals = DB::table('withdrawals')
+        ->where('trainer_id', $trainer->id)
+        ->orderBy('id', 'desc')
+        ->get();
+
+    // ৪. ভিউতে ডাটাগুলো পাঠিয়ে দেওয়া
+    return view('backend.trainer-panel.withdraw', compact('current_points', 'withdrawals'));
+}
+
+    public function withdrawStore(Request $request)
+    {
+        // ভ্যালিডেশন
+        $request->validate([
+            'amount' => 'required|numeric|min:500',
+            'method' => 'required',
+            'account_details' => 'required',
+        ]);
+
+        // লগইন করা সাবএডমিন ইউজার
+        $user = Auth::guard('subadmin')->user();
+
+        // ট্রেইনারস টেবিল থেকে ডাটা আনা (যেখানে subadmin_id ম্যাচ করে)
+        $trainer_data = DB::table('trainers')->where('subadmin_id', $user->id)->first();
+
+        // ব্যালেন্স চেক
+        if (!$trainer_data || $trainer_data->points < $request->amount) {
+            return back()->with('error', 'আপনার ব্যালেন্স পর্যাপ্ত নয় বা ট্রেইনার প্রোফাইল পাওয়া যায়নি!');
+        }
+
+        // ডাটা ইনসার্ট
+        DB::table('withdrawals')->insert([
+            'trainer_id'      => $trainer_data->id,
+            'amount'          => $request->amount,
+            'method'          => $request->method,
+            'account_details' => $request->account_details,
+            'status'          => 'pending',
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'উইথড্র রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
+    }
 }

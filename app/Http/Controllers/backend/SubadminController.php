@@ -228,32 +228,69 @@ class SubadminController extends Controller
     }
 
     public function addTrainerPoints(Request $request)
-{
-    // ১. সরাসরি ট্রেইনার কুয়েরি
-    $trainerQuery = DB::table('trainers')->where('id', $request->trainer_id);
-    $currentTrainer = $trainerQuery->first();
+    {
+        // ১. সরাসরি ট্রেইনার কুয়েরি
+        $trainerQuery = DB::table('trainers')->where('id', $request->trainer_id);
+        $currentTrainer = $trainerQuery->first();
 
-    if ($currentTrainer) {
-        $newPoints = $currentTrainer->points + $request->amount;
+        if ($currentTrainer) {
+            $newPoints = $currentTrainer->points + $request->amount;
 
-        // ২. ট্রেইনারের মেইন পয়েন্ট আপডেট
-        $trainerQuery->update(['points' => $newPoints]);
+            // ২. ট্রেইনারের মেইন পয়েন্ট আপডেট
+            $trainerQuery->update(['points' => $newPoints]);
 
-        // ৩. ট্রানজেকশন টেবিলে নতুন trainer_id কলামে ডাটা ইনসার্ট
-        DB::table('transactions')->insert([
-            'teacher_id'     => null,
-            'team_leader_id' => null,
-            'trainer_id'     => $request->trainer_id, // এবার আসল আইডিতেই বাড়ি!
-            'amount'         => $request->amount,
-            'type'           => 'credit',
-            'description'    => 'Admin added salary/points',
-            'created_at'     => now(),
-            'updated_at'     => now(),
-        ]);
+            // ৩. ট্রানজেকশন টেবিলে নতুন trainer_id কলামে ডাটা ইনসার্ট
+            DB::table('transactions')->insert([
+                'teacher_id'     => null,
+                'team_leader_id' => null,
+                'trainer_id'     => $request->trainer_id, // এবার আসল আইডিতেই বাড়ি!
+                'amount'         => $request->amount,
+                'type'           => 'credit',
+                'description'    => 'Admin added salary/points',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
 
-        return back()->with('success', 'Trainer wallet updated and recorded!');
+            return back()->with('success', 'Trainer wallet updated and recorded!');
+        }
+
+        return back()->with('error', 'Trainer not found!');
     }
 
-    return back()->with('error', 'Trainer not found!');
-}
+    public function trainerwithdrawRequests()
+    {
+        $requests = DB::table('withdrawals')
+            ->whereNotNull('trainer_id')
+            ->orderBy('id', 'desc')
+            ->get();
+        return view('backend.subadmin-withdraw.trainer-withdraw', compact('requests'));
+    }
+
+    public function approveTrainerWithdraw($id)
+    {
+        $withdraw = DB::table('withdrawals')->where('id', $id)->first();
+
+        if (!$withdraw) {
+            return back()->with('error', 'উইথড্র রিকোয়েস্ট পাওয়া যায়নি!');
+        }
+
+        // ট্রেইনারের ব্যালেন্স আপডেট এবং স্ট্যাটাস চেঞ্জ
+        DB::beginTransaction();
+        try {
+            // ১. ট্রেইনারের পয়েন্ট কমানো
+            DB::table('trainers')->where('id', $withdraw->trainer_id)->decrement('points', $withdraw->amount);
+
+            // ২. স্ট্যাটাস এপ্রুভ করা
+            DB::table('withdrawals')->where('id', $id)->update([
+                'status' => 'approved',
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'ট্রেইনারের উইথড্র সফলভাবে এপ্রুভ হয়েছে!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'কিছু একটা ভুল হয়েছে!');
+        }
+    }
 }

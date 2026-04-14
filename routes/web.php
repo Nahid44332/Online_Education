@@ -28,6 +28,7 @@ use App\Http\Controllers\backend\TeamLeaderPanelController;
 use App\Http\Controllers\backend\TrainerPanelController;
 use App\Http\Controllers\backend\WithdrawController;
 use App\Http\Controllers\ReferralController;
+use FontLib\Table\Type\name;
 
 /*
 |--------------------------------------------------------------------------
@@ -177,7 +178,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     //Testimonial
     Route::get('/testimonial', [TestimonialController::class, 'testimonial']);
     Route::get('/testimonial/create', [TestimonialController::class, 'testimonialCreate']);
-    Route::get('/testimonial/store', [TestimonialController::class, 'testimonialStore']);
+    Route::post('/testimonial/store', [TestimonialController::class, 'testimonialStore']);
     Route::get('/testimonial/edit/{id}', [TestimonialController::class, 'testimonialEdit']);
     Route::post('/testimonial/update/{id}', [TestimonialController::class, 'testimonialUpdate']);
     Route::get('/testimonial/delete/{id}', [TestimonialController::class, 'testimonialDelete']);
@@ -220,10 +221,12 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/team-leader/assign-student/{id}', [SubadminController::class, 'assignStudentPage'])->name('admin.assign_page');
     Route::get('/team-leader/add-to-team/{tl_id}/{student_id}', [SubadminController::class, 'confirmAssign'])->name('admin.do_assign');
     Route::post('/admin/team-leader/add-points', [SubadminController::class, 'addTlPoints'])->name('admin.add.tl.points');
-    Route::get('/admin/withdraw/requests', [SubadminController::class, 'withdrawRequests'])->name('admin.team_leader.withdraw.requests');
+    Route::get('/team-leader-withdraw-requests', [SubadminController::class, 'withdrawRequests'])->name('admin.team_leader.withdraw.requests');
     Route::post('/admin/withdraw/approve/{id}', [SubadminController::class, 'approveWithdraw'])->name('admin.team_leader.withdraw.approve');
     Route::get('/trainer', [SubadminController::class, 'trainer'])->name('admin.trainer_list');
     Route::post('/add-trainer-points', [SubadminController::class, 'addTrainerPoints'])->name('admin.add.trainer.points');
+    Route::get('/trainer-withdraw-requests', [SubadminController::class, 'trainerwithdrawRequests'])->name('admin.trainer.withdraw.requests');
+    Route::post('/admin/trainer/withdraw/approve/{id}', [SubadminController::class, 'approveTrainerWithdraw'])->name('admin.trainer.withdraw.approve');
 });
 
 
@@ -313,5 +316,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/trainer/profile/update', [TrainerPanelController::class, 'profileUpdate'])->name('trainer.profile.update');
         Route::get('/trainer/change-password', [TrainerPanelController::class, 'changePassword'])->name('trainer.password.change');
         Route::post('/trainer/update-password', [TrainerPanelController::class, 'updatePassword'])->name('trainer.password.update');
+        Route::get('/trainer/withdraw', [TrainerPanelController::class, 'withdraw'])->name('trainer.withdraw');
+        Route::post('/trainer/withdraw/store', [TrainerPanelController::class, 'withdrawStore'])->name('trainer.withdraw.store');
     });
 });

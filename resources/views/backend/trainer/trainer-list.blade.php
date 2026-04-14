@@ -9,11 +9,6 @@
                         <h4 class="mb-0 text-dark fw-bold">
                             <i class="mdi mdi-school me-2 text-primary"></i> Trainers List
                         </h4>
-                        {{-- ট্রেইনার অ্যাড করার বাটন --}}
-                        <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" data-bs-toggle="modal"
-                            data-bs-target="#addTrainerModal">
-                            <i class="mdi mdi-plus-circle me-1"></i> Add New Trainer
-                        </button>
                     </div>
                     <div class="card-body">
                         @if (session('success'))
@@ -35,7 +30,7 @@
                                     <tr>
                                         <th>SL</th>
                                         <th>Image</th>
-                                        <th>Name</th>
+                                        <th>Name/Email</th>
                                         <th style="width: 180px;">Wallet Points</th>
                                         <th>Phone</th>
                                         <th>Designation</th>
@@ -134,45 +129,6 @@
                             </table>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Add Trainer Modal --}}
-    <div class="modal fade" id="addTrainerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content" style="border-radius: 15px;">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title"><i class="mdi mdi-account-plus me-2 text-white"></i> Create New Trainer</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form action="#" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control" placeholder="trainer@example.com" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Password <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" placeholder="Enter Full Name" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Phone</label>
-                                <input type="text" name="phone" class="form-control" placeholder="017XXXXXXXX">
-                            </div>
-                            <div class="col-md-12 mb-3 text-end">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Trainer</button>
-                            </div>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

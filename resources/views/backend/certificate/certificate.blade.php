@@ -1,83 +1,118 @@
 @extends('backend.master')
+
 @section('content')
-    <div class="container">
-        <a href="{{ url('/admin/student/certificate/create') }}" class="btn btn-primary">Generate Certificate</a>
-    </div>
-    <div class="container mt-4">
-        <!--begin::Container-->
-        <div class="container-fluid">
-            <!--begin::Row-->
-            <div class="row">
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0" style="border-radius: 12px;">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Certificate List</h3>
+                    <h3 class="mb-0 fw-bold text-dark">Certificate List</h3>
                 </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
+                <div class="col-sm-6 text-sm-end mt-2 mt-sm-0">
+                    <a href="{{ url('/admin/student/certificate/create') }}" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fa-solid fa-plus-circle me-1"></i> Generate Certificate
+                    </a>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ url('/admin/dashboard') }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Certificate List</li>
                     </ol>
                 </div>
             </div>
-            <!--end::Row-->
         </div>
-        <!--end::Container-->
-        <form action="{{ url('/admin/student/certificate') }}" method="GET" class="mb-3">
-            <div class="mb-3">
-                <input type="text" name="search" class="form-control"
-                    placeholder="Search by Student Name, ID, Certificate No, Course" value="{{ request('search') }}"
-                    required>
-            </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-success" type="submit">Search</button>
-                <a href="{{ url('/admin/student/certificate') }}" class="btn btn-secondary">Back</a>
-            </div>
-        </form>
-        <table class="table table-bordered table-striped">
-            <thead class="table-success">
-                <tr>
-                    <th>SL</th>
-                    <th>Student Name</th>
-                    <th>Student ID</th>
-                    <th>Course</th>
-                    <th>Grade</th>
-                    <th>Certificate No</th>
-                    <th>Issue Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($certificates as $key => $certificate)
-                    <tr>
-                        <td>{{ $key + 1 }}</td>
-                        <td>{{ $certificate->student->name ?? 'N/A' }}</td>
-                        <td>{{ $certificate->student->id ?? 'N/A' }}</td>
-                        <td>{{ $certificate->course->title ?? 'N/A' }}</td>
-                        <td style="color: green">{{ $certificate->result->grade ?? 'N/A' }}</td>
-                        <td><strong>{{ $certificate->certificate_no }}</strong></td>
-                        <td>{{ \Carbon\Carbon::parse($certificate->issue_date)->format('d/m/Y') }}</td>
-                        <td>
-                            <a href="{{ url('/admin/student/certificate/' . $certificate->id) }}"
-                                class="btn btn-success btn-sm"><span class="mdi mdi-eye"></span></a>
-                            <a href="{{ url('/admin/student/certificate/download/' . $certificate->id) }}"
-                                class="btn btn-primary btn-sm">
-                                <span class="mdi mdi-download"></span>
-                            </a>
-                            <a href="{{ url('/admin/student/certificate/delete/' . $certificate->id) }}"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('Are you sure delete Certificate?')"><span
-                                    class="mdi mdi-delete"></span></a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">No Certificates Found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
 
-        <div class="text-center mt-4">
-            <strong>Certificate for Students</strong>
+        <div class="card-body">
+            <form action="{{ url('/admin/student/certificate') }}" method="GET" class="mb-4">
+                <div class="row g-2 shadow-sm p-3 bg-light rounded-3 align-items-center">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0 ps-0"
+                                placeholder="Search by Student Name, ID, Certificate No, or Course..." 
+                                value="{{ request('search') }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button class="btn btn-success flex-grow-1" type="submit">Search</button>
+                        <a href="{{ url('/admin/student/certificate') }}" class="btn btn-secondary px-3">Reset</a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-center">
+                        <tr>
+                            <th class="text-nowrap ps-3">SL</th>
+                            <th class="text-nowrap">Student Name</th>
+                            <th class="text-nowrap">ID</th>
+                            <th class="text-nowrap">Course</th>
+                            <th class="text-nowrap">Grade</th>
+                            <th class="text-nowrap">Certificate No</th>
+                            <th class="text-nowrap">Issue Date</th>
+                            <th class="text-nowrap pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        @forelse ($certificates as $key => $certificate)
+                            <tr>
+                                <td class="ps-3">{{ $key + 1 }}</td>
+                                <td class="text-start">
+                                    <span class="fw-bold d-block text-dark">{{ $certificate->student->name ?? 'Deleted Student' }}</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">#{{ $certificate->student->id ?? 'N/A' }}</span></td>
+                                <td>{{ $certificate->course->title ?? 'N/A' }}</td>
+                                <td>
+                                    <span class="fw-bold text-success">{{ $certificate->result->grade ?? 'N/A' }}</span>
+                                </td>
+                                <td><code class="text-dark fw-bold">{{ $certificate->certificate_no }}</code></td>
+                                <td class="text-nowrap">{{ \Carbon\Carbon::parse($certificate->issue_date)->format('d M Y') }}</td>
+                                <td class="pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url('/admin/student/certificate/' . $certificate->id) }}"
+                                           class="btn btn-outline-info" title="View">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url('/admin/student/certificate/download/' . $certificate->id) }}"
+                                           class="btn btn-outline-primary" title="Download">
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                        <a href="{{ url('/admin/student/certificate/delete/' . $certificate->id) }}"
+                                           class="btn btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to delete this Certificate?')" 
+                                           title="Delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-certificate d-block mb-2" style="font-size: 2rem; opacity: 0.3;"></i>
+                                    No Certificates Found
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light py-2">
+            <p class="text-center mb-0 small text-muted">Certificate Distribution Management Panel</p>
         </div>
     </div>
+</div>
+
+<style>
+    .table-responsive { border-radius: 0 0 12px 12px; }
+    .text-nowrap { white-space: nowrap; }
+    .btn-group-sm > .btn { padding: 0.4rem 0.6rem; }
+    .input-group-text { border-radius: 8px 0 0 8px; }
+    .form-control { border-radius: 0 8px 8px 0; }
+    .form-control:focus { border-color: #dee2e6; box-shadow: none; }
+</style>
 @endsection

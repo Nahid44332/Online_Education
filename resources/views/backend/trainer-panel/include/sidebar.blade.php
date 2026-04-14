@@ -37,7 +37,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('trainer.withdraw')}}">
                 <span class="menu-title">Withdraw</span>
                 <i class="mdi mdi-cash menu-icon"></i>
             </a>

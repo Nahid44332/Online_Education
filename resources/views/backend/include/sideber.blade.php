@@ -121,7 +121,7 @@
             <div class="collapse" id="sub-admin-withdraw">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Trainer Withdraw</a>
+                        <a class="nav-link" href="{{route('admin.trainer.withdraw.requests')}}">Trainer Withdraw</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{route('admin.team_leader.withdraw.requests')}}">Team Leader Withdraw</a>
