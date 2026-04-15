@@ -84,7 +84,7 @@
                 <a class="nav-link" href="#"> Counsellor </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#"> Help-line </a>
+                <a class="nav-link" href="{{route('admin.helpline')}}"> Help-line </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#"> Manager </a>

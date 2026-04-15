@@ -16,6 +16,7 @@ use App\Http\Controllers\backend\admitCardController;
 use App\Http\Controllers\backend\ExamController;
 use App\Http\Controllers\backend\resultController;
 use App\Http\Controllers\backend\CertificateController;
+use App\Http\Controllers\backend\HelplineController;
 use App\Http\Controllers\backend\ReportController;
 use App\Http\Controllers\backend\NoticeController;
 use App\Http\Controllers\backend\lockController;
@@ -227,6 +228,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/add-trainer-points', [SubadminController::class, 'addTrainerPoints'])->name('admin.add.trainer.points');
     Route::get('/trainer-withdraw-requests', [SubadminController::class, 'trainerwithdrawRequests'])->name('admin.trainer.withdraw.requests');
     Route::post('/admin/trainer/withdraw/approve/{id}', [SubadminController::class, 'approveTrainerWithdraw'])->name('admin.trainer.withdraw.approve');
+    Route::get('/admin/helpline', [SubadminController::class, 'helpline'])->name('admin.helpline');
+    Route::post('/admin/helpline/store', [SubadminController::class, 'store'])->name('admin.helpline.store');
+    Route::get('/admin/helpline-staff/delete/{id}', [SubadminController::class, 'delete'])->name('admin.helpline.delete');
+    Route::get('/admin/helpline-staff/edit/{id}', [SubadminController::class, 'edit'])->name('admin.helpline.edit');
+    Route::post('/admin/helpline-staff/update', [SubadminController::class, 'update'])->name('admin.helpline.update');
 });
 
 
@@ -328,5 +334,10 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/trainer/withdraw/store', [TrainerPanelController::class, 'withdrawStore'])->name('trainer.withdraw.store');
         Route::post('/trainer/gift-points', [TrainerPanelController::class, 'giftPoints'])->name('trainer.gift.points');
         Route::get('/trainer/transactions', [TrainerPanelController::class, 'transactions'])->name('trainer.transactions');
+    });
+
+    // Helpline Panel Route
+    Route::group(['middleware' => 'subadmin.role:helpline'], function () {    
+        Route::get('/helpline/dashboard', [HelplineController::class, 'dashboard'])->name('helpline.dashboard');
     });
 });

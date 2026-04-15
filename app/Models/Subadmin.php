@@ -36,4 +36,9 @@ class Subadmin extends Authenticatable // এখানে Model এর বদল
     {
         return $this->hasOne(Trainer::class, 'subadmin_id', 'id');
     }
+
+    public function helpline()
+    {
+        return $this->hasOne(Helpline::class, 'subadmin_id', 'id');
+    }
 }

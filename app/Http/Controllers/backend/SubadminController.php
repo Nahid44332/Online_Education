@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Helpline;
 use App\Models\Subadmin;
 use App\Models\TeamLeader;
 use App\Models\Trainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+
+use function Ramsey\Uuid\v1;
 
 class SubadminController extends Controller
 {
@@ -291,6 +294,124 @@ class SubadminController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'কিছু একটা ভুল হয়েছে!');
+        }
+    }
+
+    //============Helpline==============//
+
+    public function helpline()
+    {
+        $staffs = Subadmin::where('position', 'helpline')->with('helpline')->latest()->get();
+        return view('backend.helpline.helpline', compact('staffs'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:subadmins,email',
+            'password' => 'required|min:6',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // ২ এমবি লিমিট
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // ১. সাব-এডমিন তৈরি
+            $subadmin = \App\Models\Subadmin::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+                'position' => 'helpline',
+                'status' => 1,
+            ]);
+
+            // ২. আপনার দেওয়া পাথে ইমেজ হ্যান্ডেলিং
+            $save_url = null;
+            if ($request->file('image')) {
+                $image = $request->file('image');
+                $name_gen = hexdec(uniqid()) . '.' . $image->getClientOriginalExtension();
+
+                // আপনার কাঙ্ক্ষিত পাথ: backend/images/helpline/
+                $image->move(public_path('backend/images/helpline/'), $name_gen);
+                $save_url = 'backend/images/helpline/' . $name_gen;
+            }
+
+            // ৩. হেল্পলাইন ডিটেইলস সেভ
+            \App\Models\Helpline::create([
+                'subadmin_id' => $subadmin->id,
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'blood' => $request->blood,
+                'shift' => $request->shift,
+                'image' => $save_url,
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Helpline Account Created Successfully!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    public function delete($id)
+    {
+        Subadmin::findOrFail($id)->delete();
+        return back()->with('success', 'helpline Deleted Successfully!');
+    }
+
+    // এডিট ডাটা ফেচ করা (AJAX বা সরাসরি আইডি দিয়ে)
+    public function edit($id)
+    {
+        $staff = Subadmin::with('helpline')->findOrFail($id);
+        return response()->json($staff);
+    }
+
+    // আপডেট লজিক
+    public function update(Request $request)
+    {
+        $id = $request->id;
+        $subadmin = Subadmin::findOrFail($id);
+        $helpline = Helpline::where('subadmin_id', $id)->first();
+
+        DB::beginTransaction();
+        try {
+            // ১. সাব-এডমিন আপডেট
+            $subadmin->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                // পাসওয়ার্ড ইনপুট দিলে আপডেট হবে, না দিলে আগেরটাই থাকবে
+                'password' => $request->password ? Hash::make($request->password) : $subadmin->password,
+            ]);
+
+            // ২. ইমেজ আপডেট লজিক
+            $save_url = $helpline->image;
+            if ($request->file('image')) {
+                $image = $request->file('image');
+                if ($helpline->image && file_exists(public_path($helpline->image))) {
+                    unlink(public_path($helpline->image)); // আগের ফাইল ডিলিট
+                }
+                $name_gen = hexdec(uniqid()) . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('backend/images/helpline/'), $name_gen);
+                $save_url = 'backend/images/helpline/' . $name_gen;
+            }
+
+            // ৩. হেল্পলাইন টেবিল আপডেট
+            $helpline->update([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'blood' => $request->blood,
+                'shift' => $request->shift,
+                'image' => $save_url,
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Staff Updated Successfully!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }
