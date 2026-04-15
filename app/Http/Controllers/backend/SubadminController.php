@@ -414,4 +414,101 @@ class SubadminController extends Controller
             return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
+
+    public function AddHelplinePoints(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric',
+            'subadmin_id' => 'required'
+        ]);
+
+        // ১. হেল্পলাইন টেবিলে পয়েন্ট যোগ করা
+        Helpline::where('subadmin_id', $request->subadmin_id)->increment('points', $request->amount);
+
+        // ২. ট্রানজেকশন টেবিলে ডাটা ইনসার্ট করা (যাতে হিস্টোরিতে দেখা যায়)
+        DB::table('transactions')->insert([
+            'teacher_id'     => null,
+            'team_leader_id' => null,
+            'trainer_id'     => null,
+            'helpline_id'    => $request->subadmin_id, // আপনার নতুন বানানো কলাম
+            'amount'         => $request->amount,
+            'type'           => 'credit',
+            'description'    => 'Admin added salary',
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        return back()->with('success', 'পয়েন্ট সফলভাবে অ্যাড হয়েছে এবং ট্রানজেকশন রেকর্ড করা হয়েছে, মামা!');
+    }
+
+    public function helplineWithdrawRequests()
+    {
+        $requests = DB::table('withdrawals')
+            ->whereNotNull('helpline_id') // যাদের হেল্পলাইন আইডি আছে শুধু তাদের ডাটা
+            ->orderBy('id', 'desc')
+            ->get();
+        return view('backend.subadmin-withdraw.helpline-withdraw', compact('requests'));
+    }
+
+   public function ApproveWithdrawHelpline($id)
+{
+    $withdraw = DB::table('withdrawals')->where('id', $id)->first();
+
+    if ($withdraw && $withdraw->status == 'pending') {
+        DB::beginTransaction();
+        try {
+            // ১. উইথড্রাল স্ট্যাটাস আপডেট
+            DB::table('withdrawals')->where('id', $id)->update([
+                'status' => 'approved',
+                'updated_at' => now()
+            ]);
+
+            // ২. ট্রানজেকশন টেবিলে রেকর্ড আপডেট বা নতুন এন্ট্রি (ঐচ্ছিক কিন্তু ভালো প্র্যাকটিস)
+            // আপনি যদি চান উইথড্র হওয়ার সময় ডেসক্রিপশন আপডেট হোক:
+            DB::table('transactions')
+                ->where('helpline_id', $withdraw->helpline_id)
+                ->where('amount', $withdraw->amount)
+                ->where('type', 'debit')
+                ->where('description', 'like', '%Withdrawal request submitted%')
+                ->latest()
+                ->update([
+                    'description' => 'Withdrawal approved (Method: ' . $withdraw->method . ')',
+                    'updated_at' => now()
+                ]);
+
+            DB::commit();
+            return back()->with('success', 'মামা, উইথড্র অ্যাপ্রুভ হইছে! টাকা পাঠাইয়া দেন।');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
+        }
+    }
+
+    return back()->with('error', 'এই রিকোয়েস্ট অলরেডি প্রসেস করা হইছে।');
+}
+
+    public function RejectWithdraw($id)
+    {
+        $withdraw = DB::table('withdrawals')->where('id', $id)->first();
+
+        if ($withdraw->status == 'pending') {
+            // ১. হেল্পলাইনকে তার টাকা ফেরত দেওয়া (যেহেতু রিজেক্ট হইছে)
+            DB::table('helplines')->where('subadmin_id', $withdraw->helpline_id)->increment('points', $withdraw->amount);
+
+            // ২. ট্রানজেকশন টেবিলে একটা রিফান্ড এন্ট্রি দেওয়া (Credit)
+            DB::table('transactions')->insert([
+                'helpline_id' => $withdraw->helpline_id,
+                'amount'      => $withdraw->amount,
+                'type'        => 'credit',
+                'description' => 'Withdrawal Rejected (Refunded)',
+                'created_at'  => now()
+            ]);
+
+            // ৩. স্ট্যাটাস রিজেক্ট করা
+            DB::table('withdrawals')->where('id', $id)->update(['status' => 'rejected', 'updated_at' => now()]);
+
+            return back()->with('success', 'রিকোয়েস্ট রিজেক্ট হইছে এবং টাকা ফেরত গেছে।');
+        }
+        return back()->with('error', 'এই রিকোয়েস্ট অলরেডি প্রসেস করা হইছে।');
+    }
 }

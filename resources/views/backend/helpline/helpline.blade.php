@@ -19,14 +19,14 @@
                     <div class="card shadow-sm border-0" style="border-radius: 20px;">
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="datatable" class="table table-hover align-middle mb-0">
+                                <table id="datatable" class="table table-hover align-middle mb-0 text-center">
                                     <thead class="table-light">
                                         <tr class="text-uppercase small fw-bold">
                                             <th>SL</th>
                                             <th>Photo</th>
-                                            <th>Staff Info</th>
+                                            <th class="text-start">Staff Info</th>
+                                            <th style="width: 180px;">Wallet Points</th>
                                             <th>Contact</th>
-                                            <th>Blood</th>
                                             <th>Shift</th>
                                             <th>Status</th>
                                             <th class="text-center">Action</th>
@@ -42,15 +42,32 @@
                                                         style="width: 50px; height: 50px; object-fit: cover;"
                                                         alt="staff-photo">
                                                 </td>
-                                                <td>
+                                                <td class="text-start">
                                                     <h6 class="mb-0 fw-bold">{{ $item->name }}</h6>
                                                     <small class="text-muted">{{ $item->email }}</small>
                                                 </td>
+
+                                                {{-- পয়েন্ট অ্যাড করার সেকশন --}}
+                                                <td>
+                                                    <div class="mb-1">
+                                                        <span class="badge px-3 text-white" style="background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%); border:none; border-radius: 50px;">
+                                                            ৳ {{ number_format($item->helpline->points ?? 0, 2) }}
+                                                        </span>
+                                                    </div>
+                                                    <form action="{{ route('admin.add.helpline.points') }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="subadmin_id" value="{{ $item->id }}">
+                                                        <div class="input-group input-group-sm mt-1">
+                                                            <input type="number" name="amount" class="form-control" placeholder="Point" required>
+                                                            <button class="btn btn-success text-white" type="submit">
+                                                                <i class="mdi mdi-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </td>
+
                                                 <td><i class="ri-phone-line text-success me-1"></i>
                                                     {{ $item->helpline->phone ?? 'N/A' }}</td>
-                                                <td><span
-                                                        class="badge bg-soft-danger text-danger rounded-pill px-3">{{ $item->helpline->blood ?? 'N/A' }}</span>
-                                                </td>
                                                 <td><span
                                                         class="badge bg-soft-info text-info text-capitalize">{{ $item->helpline->shift ?? 'N/A' }}</span>
                                                 </td>
@@ -61,12 +78,16 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <a href="javascript:void(0)" onclick="editStaff({{ $item->id }})"
-                                                        class="btn btn-sm btn-info rounded-pill px-3 me-1"><i
-                                                            class="ri-pencil-line"></i> Edit</a>
-                                                    <a href="{{ route('admin.helpline.delete', $item->id) }}"
-                                                        id="delete" class="btn btn-sm btn-danger rounded-pill px-3"><i
-                                                            class="ri-delete-bin-line"></i> Delete</a>
+                                                    <div class="btn-group">
+                                                        <a href="javascript:void(0)" onclick="editStaff({{ $item->id }})"
+                                                            class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1">
+                                                            <i class="ri-pencil-line"></i> Edit
+                                                        </a>
+                                                        <a href="{{ route('admin.helpline.delete', $item->id) }}"
+                                                            id="delete" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                            <i class="ri-delete-bin-line"></i> Delete
+                                                        </a>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -147,7 +168,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
                 <div class="modal-header border-0 p-4 pb-0">
-                    <h5 class="modal-title fw-bold text-info">Edit Support Staff</h5>
+                    <h5 class="modal-title fw-bold text-info">Edit Helpline Manager</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{{ route('admin.helpline.update') }}" method="POST" enctype="multipart/form-data">

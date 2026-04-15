@@ -233,6 +233,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/admin/helpline-staff/delete/{id}', [SubadminController::class, 'delete'])->name('admin.helpline.delete');
     Route::get('/admin/helpline-staff/edit/{id}', [SubadminController::class, 'edit'])->name('admin.helpline.edit');
     Route::post('/admin/helpline-staff/update', [SubadminController::class, 'update'])->name('admin.helpline.update');
+    Route::post('/admin/add/helpline/points', [SubadminController::class, 'AddHelplinePoints'])->name('admin.add.helpline.points');
+    Route::get('/admin/withdraw/requests', [SubadminController::class, 'helplineWithdrawRequests'])->name('admin.helpline.withdraw.requests');
+    Route::post('/admin/withdraw/approve/{id}', [SubadminController::class, 'ApproveWithdrawHelpline'])->name('admin.helpline.withdraw.approve');
+    Route::Post('/admin/withdraw/reject/{id}', [SubadminController::class, 'RejectWithdraw'])->name('admin.helpline.withdraw.reject');
 });
 
 
@@ -339,5 +343,10 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
     // Helpline Panel Route
     Route::group(['middleware' => 'subadmin.role:helpline'], function () {    
         Route::get('/helpline/dashboard', [HelplineController::class, 'dashboard'])->name('helpline.dashboard');
+        Route::get('/helpline/meeting', [HelplineController::class, 'meeting'])->name('helpline.meeting');
+        Route::post('/meeting-desk/update', [HelplineController::class, 'UpdateMeetingDesk'])->name('meeting.update');
+        Route::get('/helpline/earn-money', [HelplineController::class, 'EarnMoneyHistory'])->name('helpline.earn.money');
+        Route::get('/helpline/withdraw', [HelplineController::class, 'WithdrawPage'])->name('helpline.withdraw');
+        Route::post('/helpline/withdraw/store', [HelplineController::class, 'WithdrawStore'])->name('helpline.withdraw.store');
     });
 });

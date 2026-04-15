@@ -20,7 +20,7 @@
          @yield('content')
           <!-- content-wrapper ends -->
           <!-- partial:partials/_footer.html -->
-          @include('backend.helpline-panel.help-include.navber')
+          @include('backend.helpline-panel.help-include.footer')
           <!-- partial -->
         </div>
         <!-- main-panel ends -->

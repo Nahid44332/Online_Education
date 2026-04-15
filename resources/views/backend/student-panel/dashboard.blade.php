@@ -10,7 +10,7 @@
                         <div class="card-body p-4 d-flex justify-content-between align-items-center">
                             <div>
                                 <h3 class="fw-bold">স্বাগতম, {{ $student->name }}! 🎓</h3>
-                                <p class="mb-0">আপনার শেখার যাত্রা শুভ হোক। আপনার বর্তমান পয়েন্ট:
+                                <p class="mb-0">আপনার শেখার যাত্রা শুভ হোক। আপনার বর্তমান ব্যালেন্স:
                                     <strong>{{ number_format($student->points, 0) }}</strong>
                                 </p>
                             </div>
@@ -90,11 +90,12 @@
                                 </div>
                             </div>
                             <div>
-                                <h5 class="text-muted small text-uppercase fw-bold">Official Helpline</h5>
-                                <h4 class="fw-bold text-dark">Technical Support</h4>
-                                <a href="tel:01700000000" class="text-danger fw-bold text-decoration-none">
-                                    <i class="mdi mdi-phone-in-talk"></i> 01700-000000
-                                </a>
+                                <h5 class="text-muted small text-uppercase fw-bold">May I Help You</h5>
+                                <h4 class="fw-bold text-dark">Emargancy Support</h4>
+                               <a href="{{$emargancy_link->meet_link}}"
+                                        target="_blank" class="badge badge-gradient-danger text-decoration-none">
+                                        <i class="mdi mdi-headset"></i> Emargancy
+                                    </a>
                             </div>
                         </div>
                     </div>

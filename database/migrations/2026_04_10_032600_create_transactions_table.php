@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('teacher_id')->nullable();
             $table->integer('team_leader_id')->nullable();
+            $table->integer('helpline_id')->nullable();
             $table->integer('amount');
             $table->enum('type', ['credit', 'debit']);
             $table->string('description');

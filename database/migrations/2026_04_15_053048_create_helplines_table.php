@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('blood')->nullable();
             $table->enum('shift', ['day', 'night', 'full'])->default('day');
             $table->boolean('is_online')->default(0);
+            $table->integer('points')->default(0);
             $table->string('meet_link')->nullable();
             $table->timestamps();
 

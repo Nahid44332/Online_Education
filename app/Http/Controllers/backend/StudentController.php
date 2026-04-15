@@ -5,6 +5,7 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\Certificate;
 use App\Models\Course;
+use App\Models\Helpline;
 use App\Models\LiveClass;
 use App\Models\Settings;
 use App\Models\Student;
@@ -35,8 +36,9 @@ class StudentController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
     $my_trainer = DB::table('trainers')->where('id', $student->trainer_id)->first();
+    $emargancy_link = Helpline::first();
 
-    return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer'));
+    return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer', 'emargancy_link'));
 }
 
     public function logout(Request $request)
