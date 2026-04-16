@@ -14,6 +14,7 @@ use App\Models\ReferralHistory;
 use App\Models\Transaction;
 use App\Models\WithdrawRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class adminController extends Controller
@@ -24,32 +25,36 @@ class adminController extends Controller
     }
 
     public function adminDashboard()
-    {
-        $totalStudents = Student::count();
-        $totalTeachers = Teacher::count();
-        $totalCourses  = Course::count();
-        $totalPayments = Payment::sum('amount');
-        $recentStudents = Student::latest()->take(5)->get();
-        $activeStudents = Student::where('status', 1)->count();
-        $inactiveStudents = Student::where('status', 0)->count();
+{
+    $totalStudents = Student::count();
+    $totalTeachers = Teacher::count();
+    $totalCourses  = Course::count();
+    $totalPayments = Payment::sum('amount');
+    $recentStudents = Student::latest()->take(5)->get();
 
-        $chartData = [
-            'students' => $totalStudents,
-            'teachers' => $totalTeachers,
-            'courses'  => $totalCourses,
-        ];
+    // অ্যাডমিন ড্যাশবোর্ডে আজকের টোটাল রেজিস্ট্রেশন (সবার জন্য)
+    $todayReg = Student::whereDate('created_at', now()->today())->count();
 
-        return view('backend.admin-dashboard', compact(
-            'totalStudents',
-            'totalTeachers',
-            'totalCourses',
-            'totalPayments',
-            'recentStudents',
-            'activeStudents',
-            'inactiveStudents',
-            'chartData'
-        ));
-    }
+    // অ্যাডমিন ড্যাশবোর্ডে আজকের টোটাল এক্টিভেশন
+    $todayActivated = Student::where('status', 1)
+                               ->whereDate('updated_at', now()->today())
+                               ->count();
+
+    $activeStudents = Student::where('status', 1)->count();
+    $inactiveStudents = Student::where('status', 0)->count();
+
+    $chartData = [
+        'students' => $totalStudents,
+        'teachers' => $totalTeachers,
+        'courses'  => $totalCourses,
+    ];
+
+    return view('backend.admin-dashboard', compact(
+        'totalStudents','totalTeachers','totalCourses','totalPayments',
+        'recentStudents','activeStudents','inactiveStudents','chartData',
+        'todayReg', 'todayActivated'
+    ));
+}
 
     public function studentList()
     {

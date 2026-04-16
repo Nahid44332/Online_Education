@@ -59,7 +59,7 @@ class NoticeController extends Controller
         }
 
         if ($notice->status == 1) {
-            Toastr()->warning('Published notice cannot be deleted.');
+            Toastr()->warning('আপনার নোটিশ পাবলিশ অবস্থায় রয়েছে। অনুগ্রহ করে আন-পাবলিশ করে ডিলিট করুন।');
             return redirect()->back();
         }
 

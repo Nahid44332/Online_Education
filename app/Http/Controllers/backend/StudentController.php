@@ -36,7 +36,7 @@ class StudentController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
     $my_trainer = DB::table('trainers')->where('id', $student->trainer_id)->first();
-    $emargancy_link = Helpline::first();
+    $emargancy_link = Helpline::where('is_online', 1)->first();
 
     return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer', 'emargancy_link'));
 }

@@ -166,6 +166,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/notice', [NoticeController::class, 'Notice']);
     Route::get('/notice/create', [NoticeController::class, 'noticeCreate']);
     Route::post('/notice/create/store', [NoticeController::class, 'noticeStore']);
+    Route::post('/notice/toggle-status/{id}', [NoticeController::class, 'toggleStatus']);
+    Route::get('/notice/delete/{id}', [NoticeController::class, 'noticeDelete']);
+    Route::get('/notice/edit/{id}', [NoticeController::class, 'noticeEdit']);
+    Route::post('/notice/update/{id}', [NoticeController::class, 'noticeUpdate']);
 
     //Lock
     Route::get('/lock', [lockController::class, 'studentLock']);
@@ -348,5 +352,9 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/helpline/earn-money', [HelplineController::class, 'EarnMoneyHistory'])->name('helpline.earn.money');
         Route::get('/helpline/withdraw', [HelplineController::class, 'WithdrawPage'])->name('helpline.withdraw');
         Route::post('/helpline/withdraw/store', [HelplineController::class, 'WithdrawStore'])->name('helpline.withdraw.store');
+        Route::get('/helpline/profile', [HelplineController::class, 'HelplineProfile'])->name('helpline.profile');
+        Route::post('/helpline/profile/update', [HelplineController::class, 'HelplineProfileUpdate'])->name('helpline.profile.update');
+        Route::get('/helpline/change-password', [HelplineController::class, 'ChangePassword'])->name('helpline.change.password');
+        Route::post('/helpline/password/update', [HelplineController::class, 'HelplinePasswordUpdate'])->name('helpline.password.update');
     });
 });

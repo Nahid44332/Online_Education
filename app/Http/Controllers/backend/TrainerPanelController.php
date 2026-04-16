@@ -12,15 +12,37 @@ use Illuminate\Support\Facades\Hash;
 
 class TrainerPanelController extends Controller
 {
-    public function dashboard()
-    {
-        $trainer = Auth::guard('subadmin')->user();
-        $tr_data = DB::table('trainers')->where('subadmin_id', $trainer->id)->first();
-        $totalStudents = DB::table('students')->where('trainer_id', $tr_data->id)->count();
-        $totalEarnings = $tr_data->points ?? 0;
-        return view('backend.trainer-panel.dashboard', compact('trainer', 'tr_data', 'totalStudents', 'totalEarnings'));
+   public function dashboard()
+{
+    $trainer = Auth::guard('subadmin')->user();
+    $tr_data = DB::table('trainers')->where('subadmin_id', $trainer->id)->first();
+
+    if(!$tr_data) {
+        return "Trainer data not found!";
     }
 
+    // লজিক: নতুন স্টুডেন্টের 'referred_by' কোডটি মিলবে রেফারার স্টুডেন্টের 'referral_code' এর সাথে।
+    // এবং সেই রেফারার স্টুডেন্টের 'trainer_id' হতে হবে আপনার আইডি।
+    $todayReg = DB::table('students as new_student')
+        ->join('students as referrer', 'new_student.referred_by', '=', 'referrer.referral_code')
+        ->where('referrer.trainer_id', $tr_data->id)
+        ->whereDate('new_student.created_at', now()->today())
+        ->count();
+
+    $todayActive = DB::table('students as new_student')
+        ->join('students as referrer', 'new_student.referred_by', '=', 'referrer.referral_code')
+        ->where('referrer.trainer_id', $tr_data->id)
+        ->where('new_student.status', 1)
+        ->whereDate('new_student.updated_at', now()->today())
+        ->count();
+
+    $totalStudents = DB::table('students')->where('trainer_id', $tr_data->id)->count();
+    $totalEarnings = $tr_data->points ?? 0;
+
+    return view('backend.trainer-panel.dashboard', compact(
+        'trainer', 'tr_data', 'totalStudents', 'totalEarnings', 'todayReg', 'todayActive'
+    ));
+}
     public function studentList()
     {
         $subadmin = Auth::guard('subadmin')->user();

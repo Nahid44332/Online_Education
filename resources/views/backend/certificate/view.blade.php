@@ -33,7 +33,7 @@
         </table>
 
         <div class="text-center mt-3">
-            <a href="{{url('/admin/student/certificate/print/'.$certificate->id)}}" class="btn btn-primary">Print Certificate</a>
+            <a href="{{ url('/admin/student/certificate/download/' . $certificate->id) }}" class="btn btn-primary">download Certificate</a>
         </div>
     </div>
 </div>

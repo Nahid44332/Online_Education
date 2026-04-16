@@ -13,14 +13,39 @@ use Illuminate\Support\Facades\Hash;
 class TeamLeaderPanelController extends Controller
 {
     public function dashboard()
-    {
-        $user = Auth::guard('subadmin')->user();
-        $tl_data = DB::table('team_leaders')->where('subadmin_id', $user->id)->first();
-        $studentCount = DB::table('students')->where('team_leader_id', $tl_data->id)->count();
-        $totalEarnings = $tl_data->points ?? 0;
+{
+    $user = Auth::guard('subadmin')->user();
+    $tl_data = DB::table('team_leaders')->where('subadmin_id', $user->id)->first();
 
-        return view('backend.team-leader-panel.dashboard', compact('tl_data', 'studentCount', 'totalEarnings'));
+    if(!$tl_data) {
+        return "Team Leader data not found!";
     }
+
+    // ১. আজকের ফর্ম ফিলাপ (আপনার টিমের স্টুডেন্টদের মাধ্যমে যারা রেফার হয়েছে)
+    $todayReg = DB::table('students as new_student')
+        ->join('students as referrer', 'new_student.referred_by', '=', 'referrer.referral_code')
+        ->where('referrer.team_leader_id', $tl_data->id)
+        ->whereDate('new_student.created_at', now()->today())
+        ->count();
+
+    // ২. আজকের এক্টিভেশন (আপনার টিমের রেফার করা স্টুডেন্টদের মধ্যে আজকে যারা এক্টিভ হয়েছে)
+    $todayActive = DB::table('students as new_student')
+        ->join('students as referrer', 'new_student.referred_by', '=', 'referrer.referral_code')
+        ->where('referrer.team_leader_id', $tl_data->id)
+        ->where('new_student.status', 1)
+        ->whereDate('new_student.updated_at', now()->today())
+        ->count();
+
+    // ৩. টিম লিডারের ডাইরেক্ট স্টুডেন্ট সংখ্যা
+    $studentCount = DB::table('students')->where('team_leader_id', $tl_data->id)->count();
+
+    // ৪. টিম লিডারের ইনকাম/পয়েন্ট
+    $totalEarnings = $tl_data->points ?? 0;
+
+    return view('backend.team-leader-panel.dashboard', compact(
+        'tl_data', 'studentCount', 'totalEarnings', 'todayReg', 'todayActive'
+    ));
+}
 
     public function myStudents()
     {

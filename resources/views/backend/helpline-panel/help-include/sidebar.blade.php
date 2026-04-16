@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="#" class="nav-link">
+            <a href="{{route('helpline.profile')}}" class="nav-link">
                 <div class="nav-profile-image">
                     {{-- প্রোফাইল পিকচার লোড করা --}}
                     <img src="{{ (!empty(Auth::guard('subadmin')->user()->helpline->image)) ? url(Auth::guard('subadmin')->user()->helpline->image) : url('upload/no_image.jpg') }}" alt="profile">

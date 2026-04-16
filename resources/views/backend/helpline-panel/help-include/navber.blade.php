@@ -30,7 +30,7 @@
                     </div>
                 </a>
                 <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="{{route('helpline.profile')}}">
                         <i class="mdi mdi-account me-2 text-success"></i> My Profile 
                     </a>
                     <div class="dropdown-divider"></div>

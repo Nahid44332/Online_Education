@@ -22,13 +22,13 @@
                             @forelse($requests as $row)
                                 @php 
                                     // হেল্পলাইন ইউজারের নাম বের করার জন্য (সাবঅ্যাডমিন টেবিল থেকে)
-                                    $helpline = DB::table('subadmins')->where('id', $row->helpline_id)->first(); 
+                                    $helpline = DB::table('helplines')->first(); 
                                 @endphp
                                 <tr>
                                     <td class="ps-4">
                                         <span class="fw-bold text-dark">{{ $helpline->name ?? 'Unknown User' }}</span>
                                         <br>
-                                        <small class="text-muted">ID: #{{ $row->helpline_id }}</small>
+                                        <small class="text-muted">ID: #{{ $helpline->id }}</small>
                                     </td>
                                     <td>
                                         <span class="badge bg-primary px-3">৳ {{ number_format($row->amount) }}</span>

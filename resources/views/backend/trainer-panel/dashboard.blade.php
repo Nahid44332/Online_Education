@@ -2,13 +2,13 @@
 @section('content')
 <div class="content-wrapper">
     <div class="container-fluid mt-4">
-        {{-- ওয়েলকাম ব্যানার --}}
+        {{-- ওয়েলকাম ব্যানার --}}
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card bg-gradient-primary text-white shadow-sm border-0" style="border-radius: 15px;">
                     <div class="card-body p-4">
-                        <h3 class="fw-bold">Welcome Back, {{ $trainer->name }}! 👋</h3>
-                        <p class="mb-0">Monitor student progress and manage your training sessions effectively.</p>
+                        <h3 class="fw-bold">Welcome Back, {{ auth()->guard('subadmin')->user()->name }}! 👋</h3>
+                        <p class="mb-0">আজকের কাজের আপডেট এবং স্টুডেন্ট প্রগ্রেস এখান থেকে মনিটর করুন।</p>
                     </div>
                 </div>
             </div>
@@ -16,41 +16,54 @@
 
         {{-- স্ট্যাটাস কার্ডস --}}
         <div class="row">
+            {{-- আজকের রেজিস্ট্রেশন --}}
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center" style="border-radius: 12px;">
+                    <div class="card-body">
+                        <div class="icon-box mb-2 mx-auto" style="width: 45px; height: 45px; line-height: 45px; border-radius: 50%; background-color: #fff4e5;">
+                            <i class="mdi mdi-account-plus text-warning fs-4"></i>
+                        </div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Today's Reg</h6>
+                        <h2 class="fw-bold mb-0 text-dark">{{ $todayReg }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            {{-- আজকের এক্টিভেশন --}}
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center" style="border-radius: 12px;">
+                    <div class="card-body">
+                        <div class="icon-box mb-2 mx-auto" style="width: 45px; height: 45px; line-height: 45px; border-radius: 50%; background-color: #e8f9f0;">
+                            <i class="mdi mdi-account-check text-success fs-4"></i>
+                        </div>
+                        <h6 class="text-muted small text-uppercase fw-bold">Today's Active</h6>
+                        <h2 class="fw-bold mb-0 text-dark">{{ $todayActive }}</h2>
+                    </div>
+                </div>
+            </div>
+
             {{-- মোট স্টুডেন্ট --}}
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-light-primary mb-3 mx-auto" style="width: 50px; height: 50px; line-height: 50px; border-radius: 50%; background-color: #f0f7ff;">
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center" style="border-radius: 12px;">
+                    <div class="card-body">
+                        <div class="icon-box mb-2 mx-auto" style="width: 45px; height: 45px; line-height: 45px; border-radius: 50%; background-color: #f0f7ff;">
                             <i class="mdi mdi-account-multiple text-primary fs-4"></i>
                         </div>
-                        <h5 class="text-muted small text-uppercase fw-bold">My Students</h5>
-                        <h2 class="fw-bold mb-0 text-dark">{{$totalStudents}}</h2>
+                        <h6 class="text-muted small text-uppercase fw-bold">My Total Students</h6>
+                        <h2 class="fw-bold mb-0 text-dark">{{ $totalStudents }}</h2>
                     </div>
                 </div>
             </div>
 
             {{-- মোট ইনকাম --}}
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-light-success mb-3 mx-auto" style="width: 50px; height: 50px; line-height: 50px; border-radius: 50%; background-color: #e8f9f0;">
-                            <i class="mdi mdi-cash text-success fs-4"></i>
+            <div class="col-md-3 mb-4">
+                <div class="card border-0 shadow-sm text-center" style="border-radius: 12px;">
+                    <div class="card-body">
+                        <div class="icon-box mb-2 mx-auto" style="width: 45px; height: 45px; line-height: 45px; border-radius: 50%; background-color: #feeef0;">
+                            <i class="mdi mdi-cash text-danger fs-4"></i>
                         </div>
-                        <h5 class="text-muted small text-uppercase fw-bold">Total Earnings</h5>
-                        <h2 class="fw-bold mb-0 text-dark">৳ {{$totalEarnings}}</h2>
-                    </div>
-                </div>
-            </div>
-
-            {{-- পদবী/ডেজিগনেশন --}}
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-light-info mb-3 mx-auto" style="width: 50px; height: 50px; line-height: 50px; border-radius: 50%; background-color: #e7f6f8;">
-                            <i class="mdi mdi-star text-info fs-4"></i>
-                        </div>
-                        <h5 class="text-muted small text-uppercase fw-bold">Designation</h5>
-                        <h2 class="fw-bold mb-0 text-dark" style="font-size: 1.5rem;">Official Trainer</h2>
+                        <h6 class="text-muted small text-uppercase fw-bold">Total Earnings</h6>
+                        <h2 class="fw-bold mb-0 text-dark">৳ {{ number_format($totalEarnings, 0) }}</h2>
                     </div>
                 </div>
             </div>
@@ -60,11 +73,11 @@
         <div class="row mt-2">
             <div class="col-12">
                 <div class="card border-0 shadow-sm" style="border-radius: 12px;">
-                    <div class="card-body">
-                        <h4 class="card-title text-dark">Quick Actions</h4>
-                        <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ route('trainer.stdent.list') }}" class="btn btn-gradient-info btn-sm">View My Students</a>
-                            <a href="{{ route('trainer.withdraw') }}" class="btn btn-gradient-success btn-sm">Withdraw Request</a>
+                    <div class="card-body d-flex justify-content-between align-items-center text-dark">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('trainer.stdent.list') }}" class="btn btn-gradient-info btn-sm">Student List</a>
+                            <a href="{{ route('trainer.withdraw') }}" class="btn btn-gradient-success btn-sm">Withdraw</a>
                         </div>
                     </div>
                 </div>
@@ -72,13 +85,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    /* যদি তোমার CSS ফাইলে এগুলো না থাকে তবেই এটা ব্যবহার করো */
-    .bg-light-primary { background-color: #e8f2ff !important; }
-    .bg-light-success { background-color: #e8f9f0 !important; }
-    .bg-light-info { background-color: #e7f6f8 !important; }
-    .gap-2 { gap: 0.5rem !important; }
-    .btn-sm { padding: 0.5rem 1rem; }
-</style>
 @endsection

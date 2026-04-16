@@ -63,7 +63,7 @@
                                 @endif
                             </div>
                             <div>
-                                <h5 class="text-muted small text-uppercase fw-bold">Course Trainer</h5>
+                                <h5 class="text-muted small text-uppercase fw-bold">Trainer</h5>
                                 <h4 class="fw-bold text-dark">{{ $my_trainer->name ?? 'Not Assigned' }}</h4>
 
                                 @if (isset($my_trainer->phone))
@@ -91,11 +91,19 @@
                             </div>
                             <div>
                                 <h5 class="text-muted small text-uppercase fw-bold">May I Help You</h5>
-                                <h4 class="fw-bold text-dark">Emargancy Support</h4>
-                               <a href="{{$emargancy_link->meet_link}}"
-                                        target="_blank" class="badge badge-gradient-danger text-decoration-none">
-                                        <i class="mdi mdi-headset"></i> Emargancy
+                                <h4 class="fw-bold text-dark">Emergency Support</h4>
+
+                                {{-- মামা, যদি অনলাইনে কেউ থাকে তবেই $emargancy_link ডাটা পাবে --}}
+                                @if ($emargancy_link)
+                                    <a href="{{ $emargancy_link->meet_link }}" target="_blank"
+                                        class="badge badge-gradient-success text-decoration-none shadow-sm">
+                                        <i class="mdi mdi-headset"></i> Join Now
                                     </a>
+                                @else
+                                    <span class="badge bg-secondary text-white shadow-sm">
+                                        <i class="mdi mdi-power-off"></i> Offline Now
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -110,7 +118,6 @@
                             <h4 class="card-title text-dark fw-bold">
                                 <i class="mdi mdi-heart text-danger me-2"></i> উপহারের তালিকা (Gift History)
                             </h4>
-                            <p class="text-muted small">টিম লিডারের পক্ষ থেকে পাওয়া সকল স্পেশাল পয়েন্ট এখানে দেখতে পাবেন।</p>
 
                             <div class="table-responsive">
                                 <table class="table table-hover mt-3">
@@ -123,38 +130,40 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-    @forelse($gifts as $gift)
-        <tr>
-            <td>{{ date('d M, Y', strtotime($gift->created_at)) }}</td>
-            <td>
-                <span class="fw-bold text-dark">স্পেশাল উপহার 🎁</span> <br>
-                <small class="text-muted">{{ $gift->description }}</small>
-            </td>
-            <td>
-                {{-- আইডি চেক করে দাতা শনাক্ত করা --}}
-                @if(!empty($gift->trainer_id))
-                    <label class="badge badge-gradient-info">Trainer</label>
-                    <br><small>{{ $my_trainer->name ?? 'Course Mentor' }}</small>
-                @elseif(!empty($gift->team_leader_id))
-                    <label class="badge badge-gradient-danger">Team Leader</label>
-                    <br><small>{{ $my_tl->name ?? 'Leader' }}</small>
-                @else
-                    <label class="badge badge-gradient-primary">Admin</label>
-                @endif
-            </td>
-            <td>
-                <h5 class="text-success fw-bold mb-0">+ {{ number_format($gift->amount, 0) }}</h5>
-            </td>
-            <td>
-                <label class="badge badge-success px-3">Received</label>
-            </td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="5" class="text-center py-5 text-muted">কোনো উপহার পাওয়া যায়নি।</td>
-        </tr>
-    @endforelse
-</tbody>
+                                        @forelse($gifts as $gift)
+                                            <tr>
+                                                <td>{{ date('d M, Y', strtotime($gift->created_at)) }}</td>
+                                                <td>
+                                                    <span class="fw-bold text-dark">স্পেশাল উপহার 🎁</span> <br>
+                                                    <small class="text-muted">{{ $gift->description }}</small>
+                                                </td>
+                                                <td>
+                                                    {{-- আইডি চেক করে দাতা শনাক্ত করা --}}
+                                                    @if (!empty($gift->trainer_id))
+                                                        <label class="badge badge-gradient-info">Trainer</label>
+                                                        <br><small>{{ $my_trainer->name ?? 'Course Mentor' }}</small>
+                                                    @elseif(!empty($gift->team_leader_id))
+                                                        <label class="badge badge-gradient-danger">Team Leader</label>
+                                                        <br><small>{{ $my_tl->name ?? 'Leader' }}</small>
+                                                    @else
+                                                        <label class="badge badge-gradient-primary">Admin</label>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <h5 class="text-success fw-bold mb-0">+
+                                                        {{ number_format($gift->amount, 0) }}</h5>
+                                                </td>
+                                                <td>
+                                                    <label class="badge badge-success px-3">Received</label>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center py-5 text-muted">কোনো উপহার পাওয়া
+                                                    যায়নি।</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -171,7 +180,8 @@
                         </div>
                         <div class="card-body p-5">
                             <h2 class="fw-bold text-danger">Account Inactive! 😒</h2>
-                            <p class="text-muted mt-3">দুঃখিত মামা! আপনার অ্যাকাউন্টটি বর্তমানে ইন-এক্টিভ আছে। এক্টিভ করতে কাউন্সিলরের সাথে যোগাযোগ করুন।</p>
+                            <p class="text-muted mt-3">দুঃখিত মামা! আপনার অ্যাকাউন্টটি বর্তমানে ইন-এক্টিভ আছে। এক্টিভ করতে
+                                কাউন্সিলরের সাথে যোগাযোগ করুন।</p>
 
                             <div class="bg-light p-4 mt-4" style="border-radius: 15px;">
                                 <h5 class="fw-bold text-dark">Contact Your Counsellor</h5>

@@ -17,7 +17,7 @@
         <div class="col-lg-8">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-body p-4 p-md-5">
-                    <form action="{{url('/admin/notice/store')}}" method="POST">
+                    <form action="{{url('/admin/notice/create/store')}}" method="POST">
                         @csrf
 
                         <div class="mb-4">
