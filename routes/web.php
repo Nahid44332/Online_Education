@@ -16,6 +16,7 @@ use App\Http\Controllers\backend\admitCardController;
 use App\Http\Controllers\backend\ExamController;
 use App\Http\Controllers\backend\resultController;
 use App\Http\Controllers\backend\CertificateController;
+use App\Http\Controllers\backend\CounsellorController;
 use App\Http\Controllers\backend\HelplineController;
 use App\Http\Controllers\backend\ReportController;
 use App\Http\Controllers\backend\NoticeController;
@@ -238,9 +239,15 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/admin/helpline-staff/edit/{id}', [SubadminController::class, 'edit'])->name('admin.helpline.edit');
     Route::post('/admin/helpline-staff/update', [SubadminController::class, 'update'])->name('admin.helpline.update');
     Route::post('/admin/add/helpline/points', [SubadminController::class, 'AddHelplinePoints'])->name('admin.add.helpline.points');
-    Route::get('/admin/withdraw/requests', [SubadminController::class, 'helplineWithdrawRequests'])->name('admin.helpline.withdraw.requests');
-    Route::post('/admin/withdraw/approve/{id}', [SubadminController::class, 'ApproveWithdrawHelpline'])->name('admin.helpline.withdraw.approve');
-    Route::Post('/admin/withdraw/reject/{id}', [SubadminController::class, 'RejectWithdraw'])->name('admin.helpline.withdraw.reject');
+    Route::get('/withdraw/requests', [SubadminController::class, 'helplineWithdrawRequests'])->name('admin.helpline.withdraw.requests');
+    Route::post('/withdraw/approve/{id}', [SubadminController::class, 'ApproveWithdrawHelpline'])->name('admin.helpline.withdraw.approve');
+    Route::Post('/withdraw/reject/{id}', [SubadminController::class, 'RejectWithdraw'])->name('admin.helpline.withdraw.reject');
+    Route::get('/counsellor', [SubadminController::class, 'counsellor'])->name('admin.counsellor');
+    Route::get('/counsellor/create', [SubadminController::class, 'counsellorCreate'])->name('admin.counsellor.create');
+    Route::post('/counsellor/store', [SubadminController::class, 'counsellorStore'])->name('counsellor.store');
+    Route::post('/counsellor/update/{id}', [SubadminController::class, 'counsellorUpdate'])->name('admin.counsellor.update');
+    Route::get('/counsellor/delete/{id}', [SubadminController::class, 'counsellorDelete'])->name('admin.counsellor.delete');
+
 });
 
 
@@ -356,5 +363,10 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/helpline/profile/update', [HelplineController::class, 'HelplineProfileUpdate'])->name('helpline.profile.update');
         Route::get('/helpline/change-password', [HelplineController::class, 'ChangePassword'])->name('helpline.change.password');
         Route::post('/helpline/password/update', [HelplineController::class, 'HelplinePasswordUpdate'])->name('helpline.password.update');
+    });
+
+    // Counsellor Panel Route
+    Route::group(['middleware' => 'subadmin.role:counsellor'], function () {    
+        Route::get('/counsellor/dashboard', [CounsellorController::class, 'dashboard'])->name('counsellor.dashboard');  
     });
 });

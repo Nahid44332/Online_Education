@@ -450,42 +450,42 @@ class SubadminController extends Controller
         return view('backend.subadmin-withdraw.helpline-withdraw', compact('requests'));
     }
 
-   public function ApproveWithdrawHelpline($id)
-{
-    $withdraw = DB::table('withdrawals')->where('id', $id)->first();
+    public function ApproveWithdrawHelpline($id)
+    {
+        $withdraw = DB::table('withdrawals')->where('id', $id)->first();
 
-    if ($withdraw && $withdraw->status == 'pending') {
-        DB::beginTransaction();
-        try {
-            // ১. উইথড্রাল স্ট্যাটাস আপডেট
-            DB::table('withdrawals')->where('id', $id)->update([
-                'status' => 'approved',
-                'updated_at' => now()
-            ]);
-
-            // ২. ট্রানজেকশন টেবিলে রেকর্ড আপডেট বা নতুন এন্ট্রি (ঐচ্ছিক কিন্তু ভালো প্র্যাকটিস)
-            // আপনি যদি চান উইথড্র হওয়ার সময় ডেসক্রিপশন আপডেট হোক:
-            DB::table('transactions')
-                ->where('helpline_id', $withdraw->helpline_id)
-                ->where('amount', $withdraw->amount)
-                ->where('type', 'debit')
-                ->where('description', 'like', '%Withdrawal request submitted%')
-                ->latest()
-                ->update([
-                    'description' => 'Withdrawal approved (Method: ' . $withdraw->method . ')',
+        if ($withdraw && $withdraw->status == 'pending') {
+            DB::beginTransaction();
+            try {
+                // ১. উইথড্রাল স্ট্যাটাস আপডেট
+                DB::table('withdrawals')->where('id', $id)->update([
+                    'status' => 'approved',
                     'updated_at' => now()
                 ]);
 
-            DB::commit();
-            return back()->with('success', 'মামা, উইথড্র অ্যাপ্রুভ হইছে! টাকা পাঠাইয়া দেন।');
-        } catch (\Exception $e) {
-            DB::rollback();
-            return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
-        }
-    }
+                // ২. ট্রানজেকশন টেবিলে রেকর্ড আপডেট বা নতুন এন্ট্রি (ঐচ্ছিক কিন্তু ভালো প্র্যাকটিস)
+                // আপনি যদি চান উইথড্র হওয়ার সময় ডেসক্রিপশন আপডেট হোক:
+                DB::table('transactions')
+                    ->where('helpline_id', $withdraw->helpline_id)
+                    ->where('amount', $withdraw->amount)
+                    ->where('type', 'debit')
+                    ->where('description', 'like', '%Withdrawal request submitted%')
+                    ->latest()
+                    ->update([
+                        'description' => 'Withdrawal approved (Method: ' . $withdraw->method . ')',
+                        'updated_at' => now()
+                    ]);
 
-    return back()->with('error', 'এই রিকোয়েস্ট অলরেডি প্রসেস করা হইছে।');
-}
+                DB::commit();
+                return back()->with('success', 'মামা, উইথড্র অ্যাপ্রুভ হইছে! টাকা পাঠাইয়া দেন।');
+            } catch (\Exception $e) {
+                DB::rollback();
+                return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('error', 'এই রিকোয়েস্ট অলরেডি প্রসেস করা হইছে।');
+    }
 
     public function RejectWithdraw($id)
     {
@@ -511,4 +511,153 @@ class SubadminController extends Controller
         }
         return back()->with('error', 'এই রিকোয়েস্ট অলরেডি প্রসেস করা হইছে।');
     }
+
+    //===========Counsellor==================//
+
+    public function counsellor()
+    {
+        $counsellors = DB::table('counsellors')
+            ->join('subadmins', 'counsellors.subadmin_id', '=', 'subadmins.id')
+            ->select('counsellors.*', 'subadmins.email')
+            ->orderBy('counsellors.id', 'desc')
+            ->get();
+        return view('backend.counsellor.Counsellor', compact('counsellors'));
+    }
+
+    public function counsellorCreate()
+    {
+        return view('backend.Counsellor.create');
+    }
+    public function counsellorStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:subadmins',
+            'password' => 'required|min:6',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // ইমেজ আপলোড লজিক (আপনার নতুন পাথ অনুযায়ী)
+            $imageName = null;
+            if ($request->hasFile('profile_image')) {
+                $imageName = time() . '.' . $request->profile_image->extension();
+                // এখানে পাথ পরিবর্তন করা হয়েছে
+                $request->profile_image->move(public_path('backend/images/counsellor'), $imageName);
+            }
+
+            $subadmin_id = DB::table('subadmins')->insertGetId([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'position' => 'counsellor',
+                'created_at' => now(),
+            ]);
+
+            DB::table('counsellors')->insert([
+                'subadmin_id' => $subadmin_id,
+                'name' => $request->name,
+                'designation' => $request->designation,
+                'phone' => $request->phone,
+                'gender' => $request->gender,
+                'blood' => $request->blood,
+                'address' => $request->address,
+                'facebook_link' => $request->facebook_link,
+                'dob' => $request->dob,
+                'profile_image' => $imageName,
+                'status' => $request->status ?? 1,
+                'created_at' => now(),
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin.counsellor')->with('success', 'মামা, কাউন্সেলর আইডি তৈরি হয়ে গেছে!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
+        }
+    }
+
+   // ১. আপডেট কন্ট্রোলার
+public function counsellorUpdate(Request $request, $id)
+{
+    $request->validate([
+        'name' => 'required',
+        'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $counsellor = DB::table('counsellors')->where('id', $id)->first();
+
+        // ইমেজ হ্যান্ডেলিং
+        $imageName = $counsellor->profile_image;
+        if ($request->hasFile('profile_image')) {
+            // পুরনো ইমেজ ডিলিট
+            if ($imageName) {
+                $oldPath = public_path('backend/images/counsellor/' . $imageName);
+                if (file_exists($oldPath)) { unlink($oldPath); }
+            }
+            // নতুন ইমেজ সেভ
+            $imageName = time() . '.' . $request->profile_image->extension();
+            $request->profile_image->move(public_path('backend/images/counsellor'), $imageName);
+        }
+
+        // সাব-এডমিন টেবিল আপডেট (নাম আপডেট হতে পারে)
+        DB::table('subadmins')->where('id', $counsellor->subadmin_id)->update([
+            'name' => $request->name,
+            'updated_at' => now(),
+        ]);
+
+        // কাউন্সেলর টেবিল আপডেট
+        DB::table('counsellors')->where('id', $id)->update([
+            'name' => $request->name,
+            'designation' => $request->designation,
+            'phone' => $request->phone,
+            'profile_image' => $imageName,
+            'status' => $request->status,
+            'updated_at' => now(),
+        ]);
+
+        DB::commit();
+        return back()->with('success', 'মামা, কাউন্সেলর ডাটা আপডেট হয়ে গেছে!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
+    }
+}
+
+// ২. ডিলিট কন্ট্রোলার
+public function counsellorDelete($id)
+{
+    try {
+        DB::beginTransaction();
+
+        $counsellor = DB::table('counsellors')->where('id', $id)->first();
+
+        if ($counsellor) {
+            // ১. ইমেজ ডিলিট
+            if ($counsellor->profile_image) {
+                $imagePath = public_path('backend/images/counsellor/' . $counsellor->profile_image);
+                if (file_exists($imagePath)) { unlink($imagePath); }
+            }
+
+            // ২. সাব-এডমিন ডিলিট (এটা ডিলিট করলে রিলেশন অনুযায়ী কাউন্সেলরও যাবে, তবে আমরা ম্যানুয়ালি করছি সেফটির জন্য)
+            DB::table('subadmins')->where('id', $counsellor->subadmin_id)->delete();
+            DB::table('counsellors')->where('id', $id)->delete();
+
+            DB::commit();
+            return back()->with('success', 'মামা, কাউন্সেলরকে বিদায় করে দেওয়া হয়েছে!');
+        }
+
+        return back()->with('error', 'মামা, কাউরে তো পাইলাম না ডিলিট করতে!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'ডিলিট করতে গিয়ে এরর: ' . $e->getMessage());
+    }
+}
 }
