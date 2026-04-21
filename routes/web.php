@@ -247,7 +247,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/counsellor/store', [SubadminController::class, 'counsellorStore'])->name('counsellor.store');
     Route::post('/counsellor/update/{id}', [SubadminController::class, 'counsellorUpdate'])->name('admin.counsellor.update');
     Route::get('/counsellor/delete/{id}', [SubadminController::class, 'counsellorDelete'])->name('admin.counsellor.delete');
-
+    Route::get('/counsellor/assign-list/{counsellor_id}', [SubadminController::class, 'assignStudentList'])->name('admin.counsellor.assign.list');
+    Route::get('/counsellor/assign-process/{counsellor_id}/{student_id}', [SubadminController::class, 'assignProcess'])->name('admin.counsellor.assign.process');
+    Route::get('/counsellor/logs/{id}', [SubadminController::class, 'getCounsellorLogs'])->name('admin.counsellor.logs');
+    Route::post('/counsellor/add-points', [SubadminController::class, 'addCounsellorPoints'])->name('admin.add.counsellor.points');
 });
 
 
@@ -368,5 +371,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
     // Counsellor Panel Route
     Route::group(['middleware' => 'subadmin.role:counsellor'], function () {    
         Route::get('/counsellor/dashboard', [CounsellorController::class, 'dashboard'])->name('counsellor.dashboard');  
+        Route::get('/counsellor/new-leads', [CounsellorController::class, 'leads'])->name('counsellor.new-leads');
+        Route::post('/counsellor/student-update/{id}', [CounsellorController::class, 'updateStatus'])->name('counsellor.student.update');
     });
 });

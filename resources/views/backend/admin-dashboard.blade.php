@@ -128,7 +128,7 @@
                                             @if ($student->status == 1)
                                                 <label class="badge badge-gradient-success">Active</label>
                                             @else
-                                                <label class="badge badge-gradient-danger">Pending</label>
+                                                <label class="badge badge-gradient-danger">Inactive</label>
                                             @endif
                                         </td>
                                         <td>{{ $student->created_at->diffForHumans() }}</td>

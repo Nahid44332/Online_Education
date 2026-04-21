@@ -181,16 +181,41 @@
                         <div class="card-body p-5">
                             <h2 class="fw-bold text-danger">Account Inactive! 😒</h2>
                             <p class="text-muted mt-3">দুঃখিত মামা! আপনার অ্যাকাউন্টটি বর্তমানে ইন-এক্টিভ আছে। এক্টিভ করতে
-                                কাউন্সিলরের সাথে যোগাযোগ করুন।</p>
+                                নিচের কাউন্সেলরের সাথে যোগাযোগ করুন।</p>
 
                             <div class="bg-light p-4 mt-4" style="border-radius: 15px;">
-                                <h5 class="fw-bold text-dark">Contact Your Counsellor</h5>
-                                <h4 class="text-primary fw-bold mt-2">{{ $my_tl->name ?? 'Head Office' }}</h4>
-                                @if (isset($my_tl->phone))
-                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $my_tl->phone) }}"
-                                        class="btn btn-gradient-success mt-2">
-                                        <i class="mdi mdi-whatsapp"></i> WhatsApp Now
-                                    </a>
+                                <h5 class="fw-bold text-dark mb-3">Contact Your Counsellor</h5>
+
+                                {{-- এখানে সরাসরি $counsellor ভেরিয়েবল ব্যবহার করা হয়েছে যা কন্ট্রোলার থেকে আসছে --}}
+                                @if ($counsellor)
+                                    {{-- কাউন্সেলরের প্রোফাইল ছবি --}}
+                                    @php
+                                        $c_image = $counsellor->profile_image
+                                            ? asset('backend/images/counsellor/' . $counsellor->profile_image)
+                                            : asset('backend/assets/images/no-image.png');
+                                    @endphp
+                                    <img src="{{ $c_image }}" alt="counsellor" class="rounded-circle mb-2"
+                                        style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+
+                                    <h4 class="text-primary fw-bold mt-2">{{ $counsellor->name }}</h4>
+                                    <p class="text-muted small mb-2"><i class="mdi mdi-briefcase-outline"></i>
+                                        {{ $counsellor->designation ?? 'Academic Counsellor' }}</p>
+
+                                    @if ($counsellor->phone)
+                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $counsellor->phone) }}"
+                                            target="_blank" class="btn btn-success mt-2"
+                                            style="background: linear-gradient(45deg, #25D366, #128C7E); border: none; border-radius: 30px; padding: 10px 25px;">
+                                            <i class="mdi mdi-whatsapp"></i> WhatsApp Now
+                                        </a>
+                                    @endif
+                                @else
+                                    {{-- যদি কোনো কাউন্সেলর এসাইন করা না থাকে --}}
+                                    <div class="py-3">
+                                        <i class="mdi mdi-office-building text-muted fs-1"></i>
+                                        <h4 class="text-primary fw-bold mt-2">Head Office</h4>
+                                        <p class="text-muted mt-2">বর্তমানে আপনার প্রোফাইলে কোনো কাউন্সেলর এসাইন করা নেই।
+                                            দয়া করে মেইন অফিসে যোগাযোগ করুন।</p>
+                                    </div>
                                 @endif
                             </div>
                         </div>

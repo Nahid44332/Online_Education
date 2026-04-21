@@ -30,6 +30,7 @@ class StudentController extends Controller
     $student = Auth::guard('student')->user();
     $courses = Course::where('id', $student->course_id)->get();
     $my_tl = DB::table('team_leaders')->where('id', $student->team_leader_id)->first();
+    $counsellor = DB::table('counsellors')->where('id', $student->counsellor_id)->first();
     $gifts = DB::table('transactions')
                 ->where('description', 'LIKE', '%' . $student->name . '%')
                 ->where('type', 'debit')
@@ -38,7 +39,7 @@ class StudentController extends Controller
     $my_trainer = DB::table('trainers')->where('id', $student->trainer_id)->first();
     $emargancy_link = Helpline::where('is_online', 1)->first();
 
-    return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer', 'emargancy_link'));
+    return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer', 'emargancy_link', 'counsellor'));
 }
 
     public function logout(Request $request)

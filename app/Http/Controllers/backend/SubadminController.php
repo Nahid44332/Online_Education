@@ -4,6 +4,7 @@ namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Helpline;
+use App\Models\Student;
 use App\Models\Subadmin;
 use App\Models\TeamLeader;
 use App\Models\Trainer;
@@ -579,85 +580,139 @@ class SubadminController extends Controller
         }
     }
 
-   // ১. আপডেট কন্ট্রোলার
-public function counsellorUpdate(Request $request, $id)
-{
-    $request->validate([
-        'name' => 'required',
-        'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-    ]);
-
-    try {
-        DB::beginTransaction();
-
-        $counsellor = DB::table('counsellors')->where('id', $id)->first();
-
-        // ইমেজ হ্যান্ডেলিং
-        $imageName = $counsellor->profile_image;
-        if ($request->hasFile('profile_image')) {
-            // পুরনো ইমেজ ডিলিট
-            if ($imageName) {
-                $oldPath = public_path('backend/images/counsellor/' . $imageName);
-                if (file_exists($oldPath)) { unlink($oldPath); }
-            }
-            // নতুন ইমেজ সেভ
-            $imageName = time() . '.' . $request->profile_image->extension();
-            $request->profile_image->move(public_path('backend/images/counsellor'), $imageName);
-        }
-
-        // সাব-এডমিন টেবিল আপডেট (নাম আপডেট হতে পারে)
-        DB::table('subadmins')->where('id', $counsellor->subadmin_id)->update([
-            'name' => $request->name,
-            'updated_at' => now(),
+    // ১. আপডেট কন্ট্রোলার
+    public function counsellorUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // কাউন্সেলর টেবিল আপডেট
-        DB::table('counsellors')->where('id', $id)->update([
-            'name' => $request->name,
-            'designation' => $request->designation,
-            'phone' => $request->phone,
-            'profile_image' => $imageName,
-            'status' => $request->status,
-            'updated_at' => now(),
-        ]);
+        try {
+            DB::beginTransaction();
 
-        DB::commit();
-        return back()->with('success', 'মামা, কাউন্সেলর ডাটা আপডেট হয়ে গেছে!');
+            $counsellor = DB::table('counsellors')->where('id', $id)->first();
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
-    }
-}
-
-// ২. ডিলিট কন্ট্রোলার
-public function counsellorDelete($id)
-{
-    try {
-        DB::beginTransaction();
-
-        $counsellor = DB::table('counsellors')->where('id', $id)->first();
-
-        if ($counsellor) {
-            // ১. ইমেজ ডিলিট
-            if ($counsellor->profile_image) {
-                $imagePath = public_path('backend/images/counsellor/' . $counsellor->profile_image);
-                if (file_exists($imagePath)) { unlink($imagePath); }
+            // ইমেজ হ্যান্ডেলিং
+            $imageName = $counsellor->profile_image;
+            if ($request->hasFile('profile_image')) {
+                // পুরনো ইমেজ ডিলিট
+                if ($imageName) {
+                    $oldPath = public_path('backend/images/counsellor/' . $imageName);
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
+                }
+                // নতুন ইমেজ সেভ
+                $imageName = time() . '.' . $request->profile_image->extension();
+                $request->profile_image->move(public_path('backend/images/counsellor'), $imageName);
             }
 
-            // ২. সাব-এডমিন ডিলিট (এটা ডিলিট করলে রিলেশন অনুযায়ী কাউন্সেলরও যাবে, তবে আমরা ম্যানুয়ালি করছি সেফটির জন্য)
-            DB::table('subadmins')->where('id', $counsellor->subadmin_id)->delete();
-            DB::table('counsellors')->where('id', $id)->delete();
+            // সাব-এডমিন টেবিল আপডেট (নাম আপডেট হতে পারে)
+            DB::table('subadmins')->where('id', $counsellor->subadmin_id)->update([
+                'name' => $request->name,
+                'updated_at' => now(),
+            ]);
+
+            // কাউন্সেলর টেবিল আপডেট
+            DB::table('counsellors')->where('id', $id)->update([
+                'name' => $request->name,
+                'designation' => $request->designation,
+                'phone' => $request->phone,
+                'profile_image' => $imageName,
+                'status' => $request->status,
+                'updated_at' => now(),
+            ]);
 
             DB::commit();
-            return back()->with('success', 'মামা, কাউন্সেলরকে বিদায় করে দেওয়া হয়েছে!');
+            return back()->with('success', 'মামা, কাউন্সেলর ডাটা আপডেট হয়ে গেছে!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());
         }
-
-        return back()->with('error', 'মামা, কাউরে তো পাইলাম না ডিলিট করতে!');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'ডিলিট করতে গিয়ে এরর: ' . $e->getMessage());
     }
-}
+
+    // ২. ডিলিট কন্ট্রোলার
+    public function counsellorDelete($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $counsellor = DB::table('counsellors')->where('id', $id)->first();
+
+            if ($counsellor) {
+                // ১. ইমেজ ডিলিট
+                if ($counsellor->profile_image) {
+                    $imagePath = public_path('backend/images/counsellor/' . $counsellor->profile_image);
+                    if (file_exists($imagePath)) {
+                        unlink($imagePath);
+                    }
+                }
+
+                // ২. সাব-এডমিন ডিলিট (এটা ডিলিট করলে রিলেশন অনুযায়ী কাউন্সেলরও যাবে, তবে আমরা ম্যানুয়ালি করছি সেফটির জন্য)
+                DB::table('subadmins')->where('id', $counsellor->subadmin_id)->delete();
+                DB::table('counsellors')->where('id', $id)->delete();
+
+                DB::commit();
+                return back()->with('success', 'মামা, কাউন্সেলরকে বিদায় করে দেওয়া হয়েছে!');
+            }
+
+            return back()->with('error', 'মামা, কাউরে তো পাইলাম না ডিলিট করতে!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'ডিলিট করতে গিয়ে এরর: ' . $e->getMessage());
+        }
+    }
+
+    public function assignStudentList($counsellor_id)
+    {
+        $counsellor = DB::table('counsellors')->where('id', $counsellor_id)->first();
+        $unassigned_students = Student::with('course')
+            ->whereNull('counsellor_id')
+            ->where('status', 0)
+            ->get();
+
+        return view('backend.counsellor.assign_student_list', compact('counsellor', 'unassigned_students'));
+    }
+
+    public function assignProcess($counsellor_id, $student_id)
+    {
+        DB::table('students')->where('id', $student_id)->update([
+            'counsellor_id' => $counsellor_id,
+            'updated_at' => now()
+        ]);
+
+        return back()->with('success', 'মামা, স্টুডেন্টকে সফলভাবে কাউন্সেলরের আন্ডারে দেওয়া হয়েছে!');
+    }
+
+    public function getCounsellorLogs($id)
+    {
+        // ওই কাউন্সেলরের আন্ডারে থাকা স্টুডেন্টদের সব আপডেট নোটসহ নিয়ে আসা
+        $logs = DB::table('student_updates')
+            ->join('students', 'student_updates.student_id', '=', 'students.id')
+            ->where('student_updates.counsellor_id', $id)
+            ->select('student_updates.*', 'students.name as student_name')
+            ->orderBy('student_updates.created_at', 'desc')
+            ->get();
+
+        return response()->json($logs);
+    }
+
+    public function addCounsellorPoints(Request $request)
+    {
+        $request->validate([
+            'counsellor_id' => 'required',
+            'points' => 'required|numeric'
+        ]);
+
+        // বর্তমান পয়েন্টের সাথে নতুন অ্যামাউন্ট যোগ করা
+        $counsellor = DB::table('counsellors')->where('id', $request->counsellor_id);
+        $currentPoints = $counsellor->first()->points ?? 0;
+
+        $counsellor->update([
+            'points' => $currentPoints + $request->points
+        ]);
+
+        return back()->with('success', 'মামা, কাউন্সেলরের অ্যাকাউন্টে টাকা/পয়েন্ট যোগ হয়েছে! ✅');
+    }
 }
