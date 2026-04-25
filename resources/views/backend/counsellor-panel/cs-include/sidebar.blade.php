@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="#" class="nav-link">
+            <a href="{{route('counsellor.profile')}}" class="nav-link">
                 <div class="nav-profile-image">
                     @if (Auth::guard('subadmin')->user()->counsellor)
                         <img src="{{ asset('backend/images/counsellor/' . Auth::guard('subadmin')->user()->counsellor->profile_image) }}"
@@ -39,14 +39,14 @@
                         <a class="nav-link" href="{{route('counsellor.new-leads')}}">New Leads</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Admitted Students</a>
+                        <a class="nav-link" href="{{route('counsellor.active-leads')}}">Admitted Students</a>
                     </li>
                 </ul>
             </div>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('counsellor.my-earning')}}">
                 <span class="menu-title">My Earnings</span>
                 <i class="mdi mdi-cash menu-icon"></i>
             </a>
@@ -62,10 +62,10 @@
             <div class="collapse" id="withdraw-menu">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Withdraw Request</a>
+                        <a class="nav-link" href="{{route('counsellor.withdraw')}}">Withdraw Request</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Withdraw History</a>
+                        <a class="nav-link" href="{{route('counsellor.withdraw.history')}}">Withdraw History</a>
                     </li>
                 </ul>
             </div>
@@ -79,7 +79,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('counsellor.profile.edit')}}">
                 <span class="menu-title">Profile Settings</span>
                 <i class="mdi mdi-cog menu-icon"></i>
             </a>

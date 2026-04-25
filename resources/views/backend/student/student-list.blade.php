@@ -62,7 +62,7 @@
                                                 @php
                                                     $isLocked = $student->lock && $student->lock->is_locked;
                                                 @endphp
-                                                <input class="form-check-input" type="checkbox" role="switch" 
+                                                <input class="form-check-input" type="checkbox"  onclick="return confirm('মামা, তার কি পেমেন্ট করা সফল হয়েছে     ?')" role="switch" 
                                                        onchange="this.form.submit()"
                                                        {{ $student->status == 1 ? 'checked' : '' }} 
                                                        {{ $isLocked ? 'disabled' : '' }}>

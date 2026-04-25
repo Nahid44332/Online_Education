@@ -57,7 +57,11 @@
                         <h4 class="fw-bold mb-1">{{ $teacher->name }}</h4>
                         <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill mb-3"
                             style="background: #eef2ff;">
-                            Senior Instructor
+                            Teacher
+                        </span><br>
+                        <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill mb-3"
+                            style="background: #eef2ff;">
+                            {{ $course->title ?? 'No Course Assigned' }}
                         </span>
 
                         <div class="d-flex justify-content-between mt-3 mb-4">

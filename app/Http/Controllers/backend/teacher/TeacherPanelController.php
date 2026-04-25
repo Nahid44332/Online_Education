@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\backend\teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Counsellor;
 use App\Models\Course;
 use App\Models\LiveClass;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -101,14 +103,19 @@ class TeacherPanelController extends Controller
     // TeacherPanelController.php এ স্টুডেন্ট লিস্ট আনা
     public function studentList()
     {
-        $subadmin = Auth::guard('subadmin')->user();
-        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+        $subadminId = Auth::guard('subadmin')->id();
+
+        // সরাসরি teachers টেবিল থেকে ওই টিচারের ডাটা আনা
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadminId)->first();
+        if (!$teacher) {
+            return back()->with('error', 'মামা, টিচার ডাটা পাওয়া যায়নি!');
+        }
+
+        // ঐ টিচারের কোর্সের স্টুডেন্ট লিস্ট আনা
         $course = \App\Models\Course::where('teacher_id', $teacher->id)->first();
+        $students = $course ? $course->students : collect();
 
-        // যদি রিলেশন মডেলে সেট করা থাকে (Many-to-Many)
-        $students = $course->students;
-
-        return view('backend.teacher-panel.student-list', compact('students'));
+        return view('backend.teacher-panel.student-list', compact('students', 'teacher'));
     }
 
     public function withdraw()
@@ -222,12 +229,20 @@ class TeacherPanelController extends Controller
     }
 
     public function profile()
-    {
-        $user = Auth::guard('subadmin')->user();
-        $teacher = DB::table('teachers')->where('subadmin_id', $user->id)->first();
+{
+    $user = Auth::guard('subadmin')->user();
+    
+    // সরাসরি টিচার টেবিল থেকে ডাটা আনা
+    $teacher = DB::table('teachers')->where('subadmin_id', $user->id)->first();
 
-        return view('backend.teacher-panel.profile', compact('teacher', 'user'));
+    // টিচারের সাথে রিলেটেড কোর্স আনা
+    $course = null;
+    if ($teacher) {
+        $course = DB::table('courses')->where('teacher_id', $teacher->id)->first();
     }
+
+    return view('backend.teacher-panel.profile', compact('teacher', 'user', 'course'));
+}
 
     public function editProfile()
     {
@@ -299,23 +314,63 @@ class TeacherPanelController extends Controller
         return back()->with('success', 'পাসওয়ার্ড একদম কড়কড়ে নতুন হয়ে গেছে!');
     }
 
-   public function studentResults()
+    public function studentResults()
+    {
+        $subadmin = Auth::guard('subadmin')->user();
+        $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+
+        // ১. এই টিচারের আন্ডারে থাকা কোর্সের আইডিগুলো নিন
+        $courseIds = \App\Models\Course::where('teacher_id', $teacher->id)->pluck('id');
+
+        // ২. রেজাল্ট ফিল্টার (স্টুডেন্টের কোর্স আইডি ধরে)
+        $results = \App\Models\Result::whereHas('student', function ($query) use ($courseIds) {
+            // স্টুডেন্ট টেবিলের course_id যদি টিচারের কোর্স আইডিগুলোর মধ্যে থাকে
+            $query->whereIn('course_id', $courseIds);
+        })
+            ->with(['student'])
+            ->latest()
+            ->get();
+
+        return view('backend.teacher-panel.student-results', compact('results'));
+    }
+
+    public function giftPoint(Request $request)
 {
-    $subadmin = Auth::guard('subadmin')->user();
-    $teacher = \App\Models\Teacher::where('subadmin_id', $subadmin->id)->first();
+    $request->validate([
+        'student_id' => 'required',
+        'amount'     => 'required|numeric|min:1',
+    ]);
 
-    // ১. এই টিচারের আন্ডারে থাকা কোর্সের আইডিগুলো নিন
-    $courseIds = \App\Models\Course::where('teacher_id', $teacher->id)->pluck('id');
+    // ১. লগইন করা subadmin এর আইডি দিয়ে teachers টেবিল থেকে রেকর্ড আনা
+    $teacherData = \App\Models\Teacher::where('subadmin_id', Auth::guard('subadmin')->id())->first();
 
-    // ২. রেজাল্ট ফিল্টার (স্টুডেন্টের কোর্স আইডি ধরে)
-    $results = \App\Models\Result::whereHas('student', function($query) use ($courseIds) {
-        // স্টুডেন্ট টেবিলের course_id যদি টিচারের কোর্স আইডিগুলোর মধ্যে থাকে
-        $query->whereIn('course_id', $courseIds); 
-    })
-    ->with(['student'])
-    ->latest()
-    ->get();
+    if (!$teacherData) {
+        return back()->with('error', 'মামা, টিচার প্রোফাইল খুঁজে পাওয়া যায়নি!');
+    }
 
-    return view('backend.teacher-panel.student-results', compact('results'));
+    // ২. ব্যালেন্স চেক (সরাসরি টিচার টেবিল থেকে)
+    if ($teacherData->points < $request->amount) {
+        return back()->with('error', 'মামা, আপনার যথেষ্ট পয়েন্ট নেই!');
+    }
+
+    DB::transaction(function () use ($teacherData, $request) {
+        // ৩. টিচার টেবিল থেকে পয়েন্ট কমানো
+        DB::table('teachers')->where('id', $teacherData->id)->decrement('points', $request->amount);
+
+        // ৪. স্টুডেন্ট টেবিল থেকে পয়েন্ট বাড়ানো
+        DB::table('students')->where('id', $request->student_id)->increment('points', $request->amount);
+
+        // ৫. ট্রানজেকশন টেবিল আপডেট (আপনার স্ক্রিনশটের স্ট্রাকচার অনুযায়ী)
+        DB::table('transactions')->insert([
+            'teacher_id'    => $teacherData->id, // এখানে টিচারের প্রাইমারি আইডি বসবে
+            'amount'        => $request->amount,
+            'type'          => 'debit', // যেহেতু টিচারের থেকে কমছে, তাই ডেবিট
+            'description'   => 'Gifted to Student ID: ' . $request->student_id,
+            'created_at'    => now(),
+            'updated_at'    => now(),
+        ]);
+    });
+
+    return back()->with('success', 'পয়েন্ট গিফট করা হয়েছে! ট্রানজেকশন রেকর্ড সেভ হয়েছে। 😍');
 }
 }

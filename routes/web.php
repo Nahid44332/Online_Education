@@ -251,6 +251,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/counsellor/assign-process/{counsellor_id}/{student_id}', [SubadminController::class, 'assignProcess'])->name('admin.counsellor.assign.process');
     Route::get('/counsellor/logs/{id}', [SubadminController::class, 'getCounsellorLogs'])->name('admin.counsellor.logs');
     Route::post('/counsellor/add-points', [SubadminController::class, 'addCounsellorPoints'])->name('admin.add.counsellor.points');
+    Route::get('/counsellor/withdraw-request', [SubadminController::class, 'counsellorWithdrawRequest'])->name('admin.counsellor.withdraw.request');
+    Route::post('/counsellor-withdraw/approve/{id}', [SubadminController::class, 'approveCounsellorWithdraw'])->name('admin.counsellor.withdraw.approve');
+    Route::post('/counsellor-withdraw/reject/{id}', [SubadminController::class, 'rejectCounsellorWithdraw'])->name('admin.counsellor.withdraw.reject');
 });
 
 
@@ -316,6 +319,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/teacher/profile/update-process', [TeacherPanelController::class, 'updateProfile'])->name('teacher.profile.update');
         Route::post('/password/update', [TeacherPanelController::class, 'updatePassword'])->name('teacher.password.update');
         Route::get('/teacher/student-results', [TeacherPanelController::class, 'studentResults'])->name('teacher.student.results');
+        Route::post('/gift-points', [TeacherPanelController::class, 'giftPoint'])->name('teacher.gift.point');
     });
 
     //Team Leader Panel Route
@@ -373,5 +377,16 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/counsellor/dashboard', [CounsellorController::class, 'dashboard'])->name('counsellor.dashboard');  
         Route::get('/counsellor/new-leads', [CounsellorController::class, 'leads'])->name('counsellor.new-leads');
         Route::post('/counsellor/student-update/{id}', [CounsellorController::class, 'updateStatus'])->name('counsellor.student.update');
+        Route::post('/counsellor/student-update/{id}', [CounsellorController::class, 'updateStatus'])->name('counsellor.student.update');
+        Route::get('/counsellor/active-leads', [CounsellorController::class, 'activeLeads'])->name('counsellor.active-leads');
+        Route::get('/counsellor/my-earning', [CounsellorController::class, 'myEarning'])->name('counsellor.my-earning');
+        Route::get('/counsellor/withdraw', [CounsellorController::class, 'withdraw'])->name('counsellor.withdraw');
+        Route::post('/counsellor/withdraw-store', [CounsellorController::class, 'withdrawStore'])->name('counsellor.withdraw.store');
+        Route::get('/counsellor/withdraw-history', [CounsellorController::class, 'withdrawHistory'])->name('counsellor.withdraw.history');
+        Route::get('/counsellor/profile', [CounsellorController::class, 'profile'])->name('counsellor.profile');
+        Route::get('/counsellor/profile/edit', [CounsellorController::class, 'editProfile'])->name('counsellor.profile.edit');
+        Route::post('/counsellor/profile/update', [CounsellorController::class, 'updateProfile'])->name('counsellor.profile.update');
+        Route::get('/counsellor/security', [CounsellorController::class, 'changePassword'])->name('counsellor.security');
+        Route::post('/counsellor/password-update', [CounsellorController::class, 'updatePassword'])->name('counsellor.password.update');
     });
 });

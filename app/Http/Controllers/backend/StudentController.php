@@ -24,24 +24,48 @@ class StudentController extends Controller
         $this->middleware('auth');
     }
 
-
     public function dashboard()
-{
-    $student = Auth::guard('student')->user();
-    $courses = Course::where('id', $student->course_id)->get();
-    $my_tl = DB::table('team_leaders')->where('id', $student->team_leader_id)->first();
-    $counsellor = DB::table('counsellors')->where('id', $student->counsellor_id)->first();
-    $gifts = DB::table('transactions')
-                ->where('description', 'LIKE', '%' . $student->name . '%')
-                ->where('type', 'debit')
-                ->orderBy('created_at', 'desc')
-                ->get();
-    $my_trainer = DB::table('trainers')->where('id', $student->trainer_id)->first();
-    $emargancy_link = Helpline::where('is_online', 1)->first();
+    {
+        $student = Auth::guard('student')->user();
 
-    return view('backend.student-panel.dashboard', compact('student', 'courses', 'my_tl', 'gifts', 'my_trainer', 'emargancy_link', 'counsellor'));
-}
+        // ১. স্টুডেন্টের এসাইন করা কোর্স আনা
+        $courses = Course::where('id', $student->course_id)->get();
 
+        // ২. স্টুডেন্টের কোর্স আইডি ব্যবহার করে কোর্সের টিচারকে খুঁজে বের করা
+        // ধরে নিচ্ছি courses টেবিলে teacher_id কলাম আছে (আগের আলাপ অনুযায়ী)
+        $course_data = Course::find($student->course_id);
+        $my_teacher = null;
+        if ($course_data && $course_data->teacher_id) {
+            $my_teacher = DB::table('teachers')->where('id', $course_data->teacher_id)->first();
+        }
+
+        // ৩. অন্যান্য মেম্বারদের ডাটা আনা
+        $my_tl = DB::table('team_leaders')->where('id', $student->team_leader_id)->first();
+        $counsellor = DB::table('counsellors')->where('id', $student->counsellor_id)->first();
+        $my_trainer = DB::table('trainers')->where('id', $student->trainer_id)->first();
+        $emargancy_link = Helpline::where('is_online', 1)->first();
+
+        // ৪. উপহারের তালিকা (Description-এ আইডি বা নাম দিয়ে ফিল্টার)
+        $gifts = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where(function ($query) use ($student) {
+                $query->where('description', 'LIKE', '%' . $student->id . '%')
+                    ->orWhere('description', 'LIKE', '%' . $student->name . '%');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('backend.student-panel.dashboard', compact(
+            'student',
+            'courses',
+            'my_tl',
+            'gifts',
+            'my_trainer',
+            'emargancy_link',
+            'counsellor',
+            'my_teacher'
+        ));
+    }
     public function logout(Request $request)
     {
         Auth::guard('student')->logout();
@@ -186,7 +210,7 @@ class StudentController extends Controller
         return view('backend.student-panel.certificates.certificates', compact('certificates', 'student'));
     }
 
-     public function downloadCertificate($id)
+    public function downloadCertificate($id)
     {
         $certificate = Certificate::with(['student', 'course', 'result'])->findOrFail($id);
 

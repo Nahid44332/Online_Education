@@ -132,6 +132,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('admin.helpline.withdraw.requests') }}">Helpline Withdraw</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.counsellor.withdraw.request') }}">Counsellor Withdraw</a>
+                    </li>
                 </ul>
             </div>
         </li>

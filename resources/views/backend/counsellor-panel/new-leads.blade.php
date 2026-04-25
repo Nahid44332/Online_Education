@@ -10,16 +10,18 @@
                 <table class="table table-hover align-middle">
                     <thead class="bg-light">
                         <tr>
-                            <th>ছবি ও নাম</th>
-                            <th>কোর্স</th>
-                            <th>মোবাইল ও যোগাযোগ</th>
-                            <th>রেজিস্ট্রেশন তারিখ</th>
-                            <th class="text-center">অ্যাকশন</th>
+                            <th>Student ID</th>
+                            <th>Photo & Name</th>
+                            <th>course</th>
+                            <th>Phone</th>
+                            <th>Registation Date</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($students as $student)
                         <tr>
+                            <td>{{$student->id}}</td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <img src="{{ asset('backend/images/students/'.($student->image ?? 'default.png')) }}" 

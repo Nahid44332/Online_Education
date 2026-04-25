@@ -9,8 +9,11 @@ use App\Models\Subadmin;
 use App\Models\TeamLeader;
 use App\Models\Trainer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use PhpParser\Node\Expr\Cast\Void_;
+use Spatie\FlareClient\View;
 
 use function Ramsey\Uuid\v1;
 
@@ -713,6 +716,80 @@ class SubadminController extends Controller
             'points' => $currentPoints + $request->points
         ]);
 
+        DB::table('transactions')->insert([
+            'teacher_id'     => null,
+            'team_leader_id'     => null,
+            'trainer_id'     => null,
+            'helpline_id'     => null,
+            'counsellor_id'  => $request->counsellor_id, // এখানে $request থেকে নিতে হবে
+            'amount'         => $request->points,
+            'type'           => 'credit', // যেহেতু টাকা জমা হচ্ছে
+            'description'    => $request->description ?? 'Admin added points',
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
         return back()->with('success', 'মামা, কাউন্সেলরের অ্যাকাউন্টে টাকা/পয়েন্ট যোগ হয়েছে! ✅');
+    }
+
+    public function counsellorWithdrawRequest()
+    {
+        $requests = DB::table('withdrawals')
+            ->whereNotNull('counsellor_id') // শুধুমাত্র কাউন্সেলরদের ডাটা ফিল্টার
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return view('backend.subadmin-withdraw.counsellor-withdraw', compact('requests'));
+    }
+
+    public function approveCounsellorWithdraw($id)
+    {
+        $withdraw = DB::table('withdrawals')->where('id', $id)->first();
+
+        if (!$withdraw || $withdraw->status !== 'pending') {
+            return back()->with('error', 'রিকোয়েস্টটি পাওয়া যায়নি বা অলরেডি প্রসেস করা হয়েছে।');
+        }
+
+        $counsellor = DB::table('counsellors')->where('id', $withdraw->counsellor_id)->first();
+
+        if ($counsellor->points < $withdraw->amount) {
+            return back()->with('error', 'কাউন্সেলরের পর্যাপ্ত ব্যালেন্স নেই!');
+        }
+
+        // ট্রানজেকশনটি একটি ডাটাবেজ ট্রানজেকশনের ভেতরে রাখা ভালো
+        DB::transaction(function () use ($withdraw, $counsellor) {
+            // ক. কাউন্সেলরের পয়েন্ট কমানো
+            DB::table('counsellors')->where('id', $withdraw->counsellor_id)->update([
+                'points' => $counsellor->points - $withdraw->amount,
+                'updated_at' => now()
+            ]);
+
+            // খ. ট্রানজেকশন টেবিলে ডেবিট এন্ট্রি দেওয়া
+            DB::table('transactions')->insert([
+                'counsellor_id' => $withdraw->counsellor_id,
+                'amount'        => $withdraw->amount,
+                'type'          => 'debit',
+                'description'   => "Withdrawal approved (Method: {$withdraw->method})",
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ]);
+
+            // গ. উইথড্রয়াল স্ট্যাটাস আপডেট করা
+            DB::table('withdrawals')->where('id', $withdraw->id)->update([
+                'status' => 'approved',
+                'updated_at' => now()
+            ]);
+        });
+
+        return back()->with('success', 'পেমেন্ট এপ্রুভ করা হয়েছে এবং ব্যালেন্স অ্যাডজাস্ট হয়েছে। ✅');
+    }
+
+    // ৩. রিকোয়েস্ট রিজেক্ট করা
+    public function rejectCounsellorWithdraw($id)
+    {
+        DB::table('withdrawals')->where('id', $id)->update([
+            'status' => 'rejected',
+            'updated_at' => now()
+        ]);
+
+        return back()->with('error', 'রিকোয়েস্টটি রিজেক্ট করা হয়েছে।');
     }
 }
