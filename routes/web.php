@@ -70,6 +70,9 @@ Route::get('/trams-condiotion', [FrontendController::class, 'tramsCondition']);
 Route::get('/admission-policy', [FrontendController::class, 'admissionPolicy']);
 Route::get('/payment-policy', [FrontendController::class, 'paymentPolicy']);
 
+//course React Route...
+Route::get('/course/wishlist/{id}', [FrontendController::class, 'toggleWishlist'])->name('course.wishlist');
+
 // Student Login (Public)
 Route::get('/student/login', [FrontendController::class, 'studentLogin'])->name('student.login');
 Route::post('/student/login', [FrontendController::class, 'loginSubmit'])->name('student.login.submit');
@@ -292,6 +295,10 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
     Route::get('/my-results', [StudentController::class, 'viewResult'])->name('student.result');
     Route::get('/my-certificates', [StudentController::class, 'myCertificates'])->name('student.certificates');
     Route::get('/certificate/download/{id}', [StudentController::class, 'downloadCertificate'])->name('student.certificate.download');
+
+    //passbook...
+    Route::get('/passbook', [StudentController::class, 'passbook'])->name('student.passbook');
+    Route::get('/passbook/download', [StudentController::class, 'downloadPassbookPDF'])->name('student.passbook.download');
 });
 
 
@@ -320,6 +327,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/password/update', [TeacherPanelController::class, 'updatePassword'])->name('teacher.password.update');
         Route::get('/teacher/student-results', [TeacherPanelController::class, 'studentResults'])->name('teacher.student.results');
         Route::post('/gift-points', [TeacherPanelController::class, 'giftPoint'])->name('teacher.gift.point');
+         Route::get('/passbook', [TeacherPanelController::class, 'passbook'])->name('passbook');
     });
 
     //Team Leader Panel Route

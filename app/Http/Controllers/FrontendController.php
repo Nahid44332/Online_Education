@@ -16,6 +16,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\TeacherApplication;
 use App\Models\Testimonial;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -158,15 +159,15 @@ class FrontendController extends Controller
         return view('frontend.result_view', compact('result'));
     }
 
-   public function downloadResult($id)
-{
-    $result = Result::with('student.course')->findOrFail($id);
+    public function downloadResult($id)
+    {
+        $result = Result::with('student.course')->findOrFail($id);
 
-    // উপরে Pdf ফাসাদ ইমপোর্ট করা আছে, তাই সরাসরি Pdf:: ব্যবহার করা যাবে
-    $pdf = Pdf::loadView('frontend.result-pdf', compact('result'));
+        // উপরে Pdf ফাসাদ ইমপোর্ট করা আছে, তাই সরাসরি Pdf:: ব্যবহার করা যাবে
+        $pdf = Pdf::loadView('frontend.result-pdf', compact('result'));
 
-    return $pdf->download('Result_' . $result->student->name . '.pdf');
-}
+        return $pdf->download('Result_' . $result->student->name . '.pdf');
+    }
 
     public function contactUs()
     {
@@ -355,66 +356,83 @@ class FrontendController extends Controller
         return view('frontend.Subadmin-login');
     }
 
-   public function subadminLoginSubmit(Request $request)
-{
-    // ১. ভ্যালিডেশন
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-        'position' => 'required', 
-    ]);
+    public function subadminLoginSubmit(Request $request)
+    {
+        // ১. ভ্যালিডেশন
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+            'position' => 'required',
+        ]);
 
-    $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
-    if (Auth::guard('subadmin')->attempt($credentials)) {
-        $user = Auth::guard('subadmin')->user();
+        if (Auth::guard('subadmin')->attempt($credentials)) {
+            $user = Auth::guard('subadmin')->user();
 
-        // ২. ফর্মের পজিশন আর ডাটাবেসের পজিশন ম্যাচ করা
-        if ($user->position !== $request->position) {
-            Auth::guard('subadmin')->logout();
-            return back()->with('error', 'আপনার সিলেক্ট করা পজিশনটি সঠিক নয়।');
+            // ২. ফর্মের পজিশন আর ডাটাবেসের পজিশন ম্যাচ করা
+            if ($user->position !== $request->position) {
+                Auth::guard('subadmin')->logout();
+                return back()->with('error', 'আপনার সিলেক্ট করা পজিশনটি সঠিক নয়।');
+            }
+
+            // ৩. স্ট্যাটাস চেক
+            if ($user->status == 0) {
+                Auth::guard('subadmin')->logout();
+                return back()->with('error', 'আপনার অ্যাকাউন্টটি বর্তমানে বন্ধ আছে।');
+            }
+
+            // ৪. পজিশন অনুযায়ী ডাইনামিক রিডাইরেক্ট
+            if ($user->position == 'teacher') {
+                toastr()->success('স্বাগতম টিচার প্যানেলে');
+                return redirect()->route('teacher.dashboard');
+            } elseif ($user->position == 'team_leader') {
+                toastr()->success('স্বাগতম টিম লিডার প্যানেলে');
+                return redirect()->route('team_leader.dashboard');
+            } elseif ($user->position == 'trainer') {
+                toastr()->success('স্বাগতম ট্রেইনার প্যানেলে');
+                return redirect()->route('trainer.dashboard');
+            } elseif ($user->position == 'helpline') {
+                toastr()->success('স্বাগতম হেল্পলাইন প্যানেলে');
+                return redirect()->route('helpline.dashboard');
+            } elseif ($user->position == 'counsellor') {
+                toastr()->success('স্বাগতম কাউন্সেলর প্যানেলে');
+                return redirect()->route('counsellor.dashboard');
+            }
+            // elseif ($user->position == 'manager') {
+            //     return redirect()->route('manager.dashboard');
+            // }
+
+            // ডিফল্ট রিডাইরেক্ট যদি কোনো রোল না মিলে
+            return redirect()->intended('/panel/dashboard');
         }
 
-        // ৩. স্ট্যাটাস চেক
-        if ($user->status == 0) {
-            Auth::guard('subadmin')->logout();
-            return back()->with('error', 'আপনার অ্যাকাউন্টটি বর্তমানে বন্ধ আছে।');
-        }
-
-        // ৪. পজিশন অনুযায়ী ডাইনামিক রিডাইরেক্ট
-        if ($user->position == 'teacher') {
-            toastr()->success('স্বাগতম টিচার প্যানেলে');
-            return redirect()->route('teacher.dashboard');
-        } 
-        elseif ($user->position == 'team_leader') {
-            toastr()->success('স্বাগতম টিম লিডার প্যানেলে');
-            return redirect()->route('team_leader.dashboard');
-        }
-        elseif ($user->position == 'trainer') {
-            toastr()->success('স্বাগতম ট্রেইনার প্যানেলে');
-            return redirect()->route('trainer.dashboard');
-        }
-        elseif ($user->position == 'helpline') {
-            toastr()->success('স্বাগতম হেল্পলাইন প্যানেলে');
-            return redirect()->route('helpline.dashboard');
-        }
-        elseif ($user->position == 'counsellor') {
-            toastr()->success('স্বাগতম কাউন্সেলর প্যানেলে');
-            return redirect()->route('counsellor.dashboard');
-        }
-        // elseif ($user->position == 'manager') {
-        //     return redirect()->route('manager.dashboard');
-        // }
-
-        // ডিফল্ট রিডাইরেক্ট যদি কোনো রোল না মিলে
-        return redirect()->intended('/panel/dashboard');
+        return back()->with('error', 'আপনার দেওয়া তথ্যগুলো সঠিক নয়।');
     }
-
-    return back()->with('error', 'আপনার দেওয়া তথ্যগুলো সঠিক নয়।');
-}
     public function subadminLogout()
     {
         Auth::guard('subadmin')->logout();
         return redirect('/subadmin/login');
+    }
+
+    //=============Course React==================//
+    public function toggleWishlist($course_id)
+    {
+        $user_ip = request()->ip(); // ইউজারের আইপি নেওয়া হচ্ছে
+
+        $exists = Wishlist::where('ip_address', $user_ip)
+            ->where('course_id', $course_id)
+            ->first();
+
+        if ($exists) {
+            $exists->delete(); // একবার রিয়েক্ট দেওয়া থাকলে ক্লিক করলে চলে যাবে
+        } else {
+            Wishlist::create([
+                'ip_address' => $user_ip,
+                'course_id' => $course_id
+            ]); // নতুন রিয়েক্ট যোগ হবে
+        }
+
+        return back();
     }
 }

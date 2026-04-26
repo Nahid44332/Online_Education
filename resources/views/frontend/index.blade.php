@@ -1,5 +1,40 @@
 @extends('frontend.master')
 @section('content')
+    <style>
+        /* হার্ট আইকনের জন্য এনিমেশন */
+        @keyframes heart-pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.4);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-heart {
+            animation: heart-pop 0.4s ease-out;
+            display: inline-block;
+            /* এনিমেশন কাজ করার জন্য জরুরি */
+        }
+
+        /* আইকন লাল করার স্টাইল */
+        .text-danger {
+            color: #ff0000 !important;
+        }
+
+        .fa-heart {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .fa-heart:hover {
+            transform: scale(1.2);
+        }
+    </style>
     <!--====== SLIDER PART START ======-->
 
     <section id="slider-part" class="slider-active">
@@ -14,7 +49,7 @@
                                 <p data-animation="fadeInUp" data-delay="1.3s">{{ $sitesettings->site_description }}</p>
                                 <ul>
                                     <li><a data-animation="fadeInUp" data-delay="1.9s" class="main-btn main-btn-2"
-                                            href="{{url('/student/login')}}">Login</a></li>
+                                            href="{{ url('/student/login') }}">Login</a></li>
                                     <li><a data-animation="fadeInUp" data-delay="1.9s" class="main-btn main-btn-2"
                                             href="{{ url('/admission') }}">Register</a></li>
                                 </ul>
@@ -227,8 +262,33 @@
                                     </div>
                                     <div class="admin">
                                         <ul>
-                                            <li><a href="#"><i class="fa fa-user"></i><span>31</span></a></li>
-                                            <li><a href="#"><i class="fa fa-heart"></i><span>10</span></a></li>
+                                            <li><a href="#"><i
+                                                        class="fa fa-user"></i><span>{{ $course->students->count() }}</span></a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url('/course/wishlist/' . $course->id) }}">
+                                                    @php
+                                                        // এই ইউজারের আইপি থেকে কি রিয়েক্ট দেওয়া হয়েছে?
+                                                        $hasReacted = \App\Models\Wishlist::where(
+                                                            'ip_address',
+                                                            request()->ip(),
+                                                        )
+                                                            ->where('course_id', $course->id)
+                                                            ->exists();
+                                                        // মোট রিয়েক্ট কয়টা?
+                                                        $totalReacts = \App\Models\Wishlist::where(
+                                                            'course_id',
+                                                            $course->id,
+                                                        )->count();
+                                                    @endphp
+
+                                                    {{-- রিয়েক্ট দেওয়া থাকলে text-danger আর animate-heart ক্লাস কাজ করবে --}}
+                                                    <i class="fa fa-heart {{ $hasReacted ? 'text-danger animate-heart' : '' }}"
+                                                        style="{{ $hasReacted ? 'color:red' : 'color:#999' }}"></i>
+
+                                                    <span>{{ $totalReacts }}</span>
+                                                </a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -250,10 +310,10 @@
                 <div class="col-lg-5">
                     <div class="section-title mt-50">
                         <h5>Featured Teachers</h5>
-                        <h2>{{$teachereatured->feature_title}}</h2>
+                        <h2>{{ $teachereatured->feature_title }}</h2>
                     </div> <!-- section title -->
                     <div class="teachers-cont">
-                        <p>{{$teachereatured->feature_description}}</p>
+                        <p>{{ $teachereatured->feature_description }}</p>
                         <a href="#" class="main-btn mt-55">Career with us</a>
                     </div> <!-- teachers cont -->
                 </div>
@@ -327,44 +387,48 @@
 
     <!--====== NEWS PART START ======-->
 
-   <section id="news-part" class="pt-115 pb-110">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="section-title pb-50">
-                    <h5>Latest News</h5>
-                    <h2>From the news</h2>
+    <section id="news-part" class="pt-115 pb-110">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="section-title pb-50">
+                        <h5>Latest News</h5>
+                        <h2>From the news</h2>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            @if($newspaper->count() > 0)
-                @foreach ($newspaper as $news)
-                    <div class="col-lg-6">
-                        <div class="singel-news mt-30">
-                            <div class="news-thum pb-25">
-                                <img src="{{ asset('backend/images/news/'.$news->image) }}" alt="News">
-                            </div>
-                            <div class="news-cont">
-                                <ul>
-                                    <li><a href="#"><i class="fa fa-calendar"></i>{{ $news->created_at->format('d/m/y') }}</a></li>
-                                    <li><a href="#"> <span>By</span> {{ $news->published_by }}</a></li>
-                                </ul>
-                                <a href="#"><h3>{{ $news->title }}</h3></a>
-                                <p>{{ $news->description }}</p>
+            <div class="row">
+                @if ($newspaper->count() > 0)
+                    @foreach ($newspaper as $news)
+                        <div class="col-lg-6">
+                            <div class="singel-news mt-30">
+                                <div class="news-thum pb-25">
+                                    <img src="{{ asset('backend/images/news/' . $news->image) }}" alt="News">
+                                </div>
+                                <div class="news-cont">
+                                    <ul>
+                                        <li><a href="#"><i
+                                                    class="fa fa-calendar"></i>{{ $news->created_at->format('d/m/y') }}</a>
+                                        </li>
+                                        <li><a href="#"> <span>By</span> {{ $news->published_by }}</a></li>
+                                    </ul>
+                                    <a href="#">
+                                        <h3>{{ $news->title }}</h3>
+                                    </a>
+                                    <p>{{ $news->description }}</p>
+                                </div>
                             </div>
                         </div>
+                    @endforeach
+                @else
+                    <div class="col-12 text-center mt-5">
+                        <div class="alert alert-info">
+                            No news available.
+                        </div>
                     </div>
-                @endforeach
-            @else
-                <div class="col-12 text-center mt-5">
-                    <div class="alert alert-info">
-                        No news available.
-                    </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
-    </div>
-</section>
+    </section>
     <!--====== NEWS PART ENDS ======-->
 @endsection

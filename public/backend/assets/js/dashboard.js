@@ -218,12 +218,17 @@
     });
   }
   if ($.cookie('purple-pro-banner') != "true") {
-    document.querySelector('#proBanner').classList.add('d-flex');
-    document.querySelector('.navbar').classList.remove('fixed-top');
-  } else {
-    document.querySelector('#proBanner').classList.add('d-none');
-    document.querySelector('.navbar').classList.add('fixed-top');
-  }
+    // এখানে একটা চেক বসিয়ে দিলাম
+    if (document.querySelector('#proBanner')) {
+        document.querySelector('#proBanner').classList.add('d-flex');
+        document.querySelector('.navbar')?.classList.remove('fixed-top');
+    }
+} else {
+    if (document.querySelector('#proBanner')) {
+        document.querySelector('#proBanner').classList.add('d-none');
+        document.querySelector('.navbar')?.classList.add('fixed-top');
+    }
+}
 
   if ($(".navbar").hasClass("fixed-top")) {
     document.querySelector('.page-body-wrapper').classList.remove('pt-0');

@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Counsellor;
 use App\Models\Course;
 use App\Models\LiveClass;
+use App\Models\Student;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use App\Notifications\PointReceived;
 
 class TeacherPanelController extends Controller
 {
@@ -333,44 +335,61 @@ class TeacherPanelController extends Controller
 
         return view('backend.teacher-panel.student-results', compact('results'));
     }
-
-    public function giftPoint(Request $request)
+public function giftPoint(Request $request)
 {
     $request->validate([
         'student_id' => 'required',
         'amount'     => 'required|numeric|min:1',
     ]);
 
-    // ১. লগইন করা subadmin এর আইডি দিয়ে teachers টেবিল থেকে রেকর্ড আনা
+    // ১. লগইন করা subadmin এর আইডি দিয়ে teacher আনা
     $teacherData = \App\Models\Teacher::where('subadmin_id', Auth::guard('subadmin')->id())->first();
 
     if (!$teacherData) {
-        return back()->with('error', 'মামা, টিচার প্রোফাইল খুঁজে পাওয়া যায়নি!');
+        return back()->with('error', 'মামা, টিচার প্রোফাইল খুঁজে পাওয়া যায়নি!');
     }
 
-    // ২. ব্যালেন্স চেক (সরাসরি টিচার টেবিল থেকে)
+    // ২. ব্যালেন্স চেক
     if ($teacherData->points < $request->amount) {
         return back()->with('error', 'মামা, আপনার যথেষ্ট পয়েন্ট নেই!');
     }
 
-    DB::transaction(function () use ($teacherData, $request) {
-        // ৩. টিচার টেবিল থেকে পয়েন্ট কমানো
+    // স্টুডেন্ট ডাটা আনা (নোটিফিকেশন পাঠানোর জন্য দরকার)
+    $student = Student::find($request->student_id);
+
+    if (!$student) {
+        return back()->with('error', 'মামা, স্টুডেন্ট খুঁজে পাওয়া যায়নি!');
+    }
+
+    DB::transaction(function () use ($teacherData, $request, $student) {
+        // ৩. টিচার টেবিল থেকে পয়েন্ট কমানো
         DB::table('teachers')->where('id', $teacherData->id)->decrement('points', $request->amount);
 
-        // ৪. স্টুডেন্ট টেবিল থেকে পয়েন্ট বাড়ানো
+        // ৪. স্টুডেন্ট টেবিল থেকে পয়েন্ট বাড়ানো (এখানে আপনার 'students' টেবিল হলে সেটা ইউজ করবেন)
         DB::table('students')->where('id', $request->student_id)->increment('points', $request->amount);
 
-        // ৫. ট্রানজেকশন টেবিল আপডেট (আপনার স্ক্রিনশটের স্ট্রাকচার অনুযায়ী)
+        // ৫. ট্রানজেকশন রেকর্ড
         DB::table('transactions')->insert([
-            'teacher_id'    => $teacherData->id, // এখানে টিচারের প্রাইমারি আইডি বসবে
+            'teacher_id'    => $teacherData->id,
             'amount'        => $request->amount,
-            'type'          => 'debit', // যেহেতু টিচারের থেকে কমছে, তাই ডেবিট
+            'type'          => 'debit',
             'description'   => 'Gifted to Student ID: ' . $request->student_id,
             'created_at'    => now(),
             'updated_at'    => now(),
         ]);
+
+        // ৬. স্টুডেন্টকে নোটিফিকেশন পাঠানো (ম্যাজিক এখানে)
+        $details = [
+            'title'   => 'পয়েন্ট গিফট!',
+            'message' => 'মামা, টিচার আপনাকে ' . $request->amount . ' পয়েন্ট গিফট করেছে!',
+            'icon'    => 'mdi-cash-plus',
+            'color'   => 'text-success',
+            'url'     => route('student.passbook') // আপনার পাসবুক রাউট নাম
+        ];
+
+        $student->notify(new PointReceived($details));
     });
 
-    return back()->with('success', 'পয়েন্ট গিফট করা হয়েছে! ট্রানজেকশন রেকর্ড সেভ হয়েছে। 😍');
+    return back()->with('success', 'পয়েন্ট গিফট করা হয়েছে এবং স্টুডেন্টকে নোটিফিকেশন পাঠানো হয়েছে! 😍');
 }
 }

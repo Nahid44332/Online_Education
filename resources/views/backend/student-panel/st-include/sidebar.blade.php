@@ -64,6 +64,14 @@
         @endif
         @if (Auth::guard('student')->user()->status == 1)
             <li class="nav-item">
+                <a class="nav-link" href="{{ route('student.passbook') }}">
+                    <span class="menu-title">Passbook</span>
+                    <i class="mdi mdi-book menu-icon"></i>
+                </a>
+            </li>
+        @endif
+        @if (Auth::guard('student')->user()->status == 1)
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('student.admit-card') }}">
                     <span class="menu-title">Admit Card</span>
                     <i class="mdi mdi-card-account-details-outline menu-icon"></i>

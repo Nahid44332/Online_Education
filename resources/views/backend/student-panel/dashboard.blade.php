@@ -121,67 +121,71 @@
             </div>
 
             {{-- গিফট হিস্ট্রি সেকশন --}}
-<div class="row">
-    <div class="col-12 grid-margin stretch-card">
-        <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-            <div class="card-body">
-                <h4 class="card-title text-dark fw-bold">
-                    <i class="mdi mdi-heart text-danger me-2"></i> উপহারের তালিকা (Gift History)
-                </h4>
+            <div class="row">
+                <div class="col-12 grid-margin stretch-card">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body">
+                            <h4 class="card-title text-dark fw-bold">
+                                <i class="mdi mdi-heart text-danger me-2"></i> উপহারের তালিকা (Gift History)
+                            </h4>
 
-                <div class="table-responsive">
-                    <table class="table table-hover mt-3">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>তারিখ</th>
-                                <th>উপহারের বিবরণ</th>
-                                <th>প্রেরক (Sender)</th>
-                                <th>পরিমাণ</th>
-                                <th>স্ট্যাটাস</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($gifts as $gift)
-                                <tr>
-                                    <td>{{ date('d M, Y', strtotime($gift->created_at)) }}</td>
-                                    <td>
-                                        <span class="fw-bold text-dark">স্পেশাল উপহার 🎁</span> <br>
-                                        <small class="text-muted">{{ $gift->description ?? 'পয়েন্ট গিফট করা হয়েছে' }}</small>
-                                    </td>
-                                    <td>
-                                        {{-- প্রেরক শনাক্তকরণ --}}
-                                        @if (!empty($gift->teacher_id))
-                                            <label class="badge badge-gradient-primary">Teacher</label>
-                                            <br><small class="fw-bold text-info">{{$my_teacher->name}}</small>
-                                        @elseif(!empty($gift->trainer_id))
-                                            <label class="badge badge-gradient-info">Trainer</label>
-                                            <br><small>{{ $my_trainer->name ?? 'Course Mentor' }}</small>
-                                        @elseif(!empty($gift->team_leader_id))
-                                            <label class="badge badge-gradient-danger">Team Leader</label>
-                                            <br><small>{{ $my_tl->name ?? 'Leader' }}</small>
-                                        @else
-                                            <label class="badge badge-gradient-secondary">System Admin</label>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <h5 class="text-success fw-bold mb-0">+{{ number_format($gift->amount, 0) }}</h5>
-                                    </td>
-                                    <td>
-                                        <label class="badge badge-success px-3">Received</label>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">কোনো উপহার পাওয়া যায়নি।</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            <div class="table-responsive">
+                                <table class="table table-hover mt-3">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>তারিখ</th>
+                                            <th>উপহারের বিবরণ</th>
+                                            <th>প্রেরক (Sender)</th>
+                                            <th>পরিমাণ</th>
+                                            <th>স্ট্যাটাস</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($gifts as $gift)
+                                            <tr>
+                                                <td>{{ date('d M, Y', strtotime($gift->created_at)) }}</td>
+                                                <td>
+                                                    <span class="fw-bold text-dark">স্পেশাল উপহার 🎁</span> <br>
+                                                    <small
+                                                        class="text-muted">{{ $gift->description ?? 'পয়েন্ট গিফট করা হয়েছে' }}</small>
+                                                </td>
+                                                <td>
+                                                    {{-- প্রেরক শনাক্তকরণ --}}
+                                                    @if (!empty($gift->teacher_id))
+                                                        <label class="badge badge-gradient-primary">Teacher</label>
+                                                        <br><small
+                                                            class="fw-bold text-info">{{ $my_teacher->name }}</small>
+                                                    @elseif(!empty($gift->trainer_id))
+                                                        <label class="badge badge-gradient-info">Trainer</label>
+                                                        <br><small>{{ $my_trainer->name ?? 'Course Mentor' }}</small>
+                                                    @elseif(!empty($gift->team_leader_id))
+                                                        <label class="badge badge-gradient-danger">Team Leader</label>
+                                                        <br><small>{{ $my_tl->name ?? 'Leader' }}</small>
+                                                    @else
+                                                        <label class="badge badge-gradient-secondary">System Admin</label>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <h5 class="text-success fw-bold mb-0">
+                                                        +{{ number_format($gift->amount, 0) }}</h5>
+                                                </td>
+                                                <td>
+                                                    <label class="badge badge-success px-3">Received</label>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center py-5 text-muted">কোনো উপহার পাওয়া
+                                                    যায়নি।</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
         @else
             {{-- ইন-অ্যাক্টিভ স্ক্রিন --}}
             <div class="row justify-content-center mt-5">

@@ -223,4 +223,75 @@ class StudentController extends Controller
 
         return $pdf->download('Certificate_' . $certificate->student->name . '.pdf');
     }
+
+    public function passbook()
+    {
+        $student = auth()->user();
+        $student_id = $student->id;
+        $student_name = $student->name;
+
+        // ১. রেফারেল বোনাস (Credit)
+        $refers = DB::table('referral_histories')
+            ->select('points as amount', DB::raw("'Referral Bonus' as reason"), 'created_at', DB::raw("'Credit' as type"))
+            ->where('student_id', $student_id);
+
+        // ২. উইথড্রয়াল (Debit)
+        $withdraws = DB::table('withdraw_requests')
+            ->select('points as amount', DB::raw("'Withdrawal Request' as reason"), 'created_at', DB::raw("'Debit' as type"))
+            ->where('student_id', $student_id);
+
+        // ৩. গিফট বা অন্যান্য ট্রানজ্যাকশন (আপনার ড্যাশবোর্ডের লজিক অনুযায়ী)
+        // এখানে amount কলাম থাকলে সেটা select করবেন
+        $gifts_transactions = DB::table('transactions')
+            ->select('amount', DB::raw("'Gift/Special Reward 🎁' as reason"), 'created_at', DB::raw("'Credit' as type"))
+            ->where(function ($query) use ($student_id, $student_name) {
+                $query->where('description', 'LIKE', '%' . $student_id . '%')
+                    ->orWhere('description', 'LIKE', '%' . $student_name . '%');
+            });
+
+        // সবগুলোকে একসাথে জোড়া লাগানো (Union)
+        $all_history = $refers->union($withdraws)
+            ->union($gifts_transactions)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('backend.student-panel.passbook', compact('all_history', 'student'));
+    }
+
+    public function downloadPassbookPDF()
+{
+    $student = auth()->user();
+    $student_id = $student->id;
+    $student_name = $student->name;
+
+    // ১. রেফারেল বোনাস
+    $refers = DB::table('referral_histories')
+        ->select('points as amount', DB::raw("'Referral Bonus' as reason"), 'created_at', DB::raw("'Credit' as type"))
+        ->where('student_id', $student_id);
+
+    // ২. উইথড্রয়াল
+    $withdraws = DB::table('withdraw_requests')
+        ->select('points as amount', DB::raw("'Withdrawal Request' as reason"), 'created_at', DB::raw("'Debit' as type"))
+        ->where('student_id', $student_id);
+
+    // ৩. গিফট ট্রানজ্যাকশন (আপনার ড্যাশবোর্ড লজিক অনুযায়ী)
+    $gifts_transactions = DB::table('transactions')
+        ->select('amount', DB::raw("'Gift/Special Reward 🎁' as reason"), 'created_at', DB::raw("'Credit' as type"))
+        ->where(function ($query) use ($student_id, $student_name) {
+            $query->where('description', 'LIKE', '%' . $student_id . '%')
+                  ->orWhere('description', 'LIKE', '%' . $student_name . '%');
+        });
+
+    // সব ডাটা ইউনিয়ন করে আনা
+    $all_history = $refers->union($withdraws)
+        ->union($gifts_transactions)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // পিডিএফ জেনারেট করা
+    $pdf = Pdf::loadView('backend.student-panel.passbook_pdf', compact('all_history', 'student'))
+              ->setPaper('a4', 'portrait');
+
+    return $pdf->download('Passbook_'.$student_name.'.pdf');
+}
 }
