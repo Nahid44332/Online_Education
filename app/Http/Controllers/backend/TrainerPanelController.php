@@ -206,33 +206,32 @@ class TrainerPanelController extends Controller
     $trainer = DB::table('trainers')->where('subadmin_id', $user->id)->first();
 
     if (!$trainer) {
-        return back()->with('error', 'মামা, আপনাকে তো ট্রেইনার হিসেবে খুঁজে পাওয়া যাচ্ছে না!');
+        return back()->with('error', 'মামা, আপনাকে তো ট্রেইনার হিসেবে খুঁজে পাওয়া যাচ্ছে না!');
     }
 
-    // ২. ট্রেইনারের নিজের পয়েন্ট চেক করা
     if ($trainer->points < $request->points) {
-        return back()->with('error', 'মামা, আপনার নিজের ব্যালেন্সে তো অত পয়েন্ট নাই!');
+        return back()->with('error', 'মামা, আপনার নিজের ব্যালেন্সে তো অত পয়েন্ট নাই!');
     }
 
-    // ৩. স্টুডেন্ট চেক করা
-    $student = DB::table('students')->where('id', $request->student_id)->first();
+    // ২. স্টুডেন্ট চেক করা (এখানে Model ব্যবহার করতে হবে নোটিফিকেশন পাঠানোর জন্য)
+    $student = \App\Models\Student::find($request->student_id);
 
     if (!$student) {
-        return back()->with('error', 'এই স্টুডেন্টকে তো খুঁজে পাওয়া যাচ্ছে না!');
+        return back()->with('error', 'এই স্টুডেন্টকে তো খুঁজে পাওয়া যাচ্ছে না!');
     }
 
     DB::beginTransaction();
     try {
-        // ৪. ট্রেইনারের পয়েন্ট কমানো
+        // ৩. ট্রেইনারের পয়েন্ট কমানো
         DB::table('trainers')->where('id', $trainer->id)->decrement('points', $request->points);
 
-        // ৫. স্টুডেন্টের পয়েন্ট বাড়ানো
-        DB::table('students')->where('id', $student->id)->increment('points', $request->points);
+        // ৪. স্টুডেন্টের পয়েন্ট বাড়ানো
+        $student->increment('points', $request->points);
 
-        // ৬. লেনদেনের ইতিহাস (Transaction Table)
+        // ৫. লেনদেনের ইতিহাস
         DB::table('transactions')->insert([
             'trainer_id'     => $trainer->id,
-            'team_leader_id' => $trainer->team_leader_id, // যদি ট্রেইনারের টিএল আইডি থাকে, তবে এটি ফিল্টার করতে সুবিধা দেবে
+            'team_leader_id' => $trainer->team_leader_id,
             'amount'         => $request->points,
             'type'           => 'debit',
             'description'    => "Gifted to Student: " . $student->name . " (By Trainer)",
@@ -240,8 +239,18 @@ class TrainerPanelController extends Controller
             'updated_at'     => now(),
         ]);
 
+        // === ৬. নোটিফিকেশন পাঠানোর কোড (এই অংশটুকু যুক্ত করা হয়েছে) ===
+        $student->notify(new \App\Notifications\PointReceived([
+            'title'   => 'পয়েন্ট গিফট!',
+            'message' => 'মামা, ট্রেইনার আপনাকে ' . $request->points . ' পয়েন্ট গিফট করেছে!',
+            'icon'    => 'mdi-cash-plus',
+            'color'   => 'text-success',
+            'url'     => url('/student/passbook') // আপনার প্যানেলের লিংকের সাথে মিলিয়ে নিন
+        ]));
+        // ==========================================================
+
         DB::commit();
-        return back()->with('success', 'অভিনন্দন! স্টুডেন্টকে সফলভাবে পয়েন্ট গিফট করা হয়েছে।');
+        return back()->with('success', 'অভিনন্দন! স্টুডেন্টকে সফলভাবে পয়েন্ট গিফট করা হয়েছে।');
     } catch (\Exception $e) {
         DB::rollback();
         return back()->with('error', 'ঝামেলা হইছে মামা: ' . $e->getMessage());

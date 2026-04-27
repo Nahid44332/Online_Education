@@ -299,6 +299,9 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
     //passbook...
     Route::get('/passbook', [StudentController::class, 'passbook'])->name('student.passbook');
     Route::get('/passbook/download', [StudentController::class, 'downloadPassbookPDF'])->name('student.passbook.download');
+
+    // স্টুডেন্টের সব নোটিফিকেশন পড়া হিসেবে মার্ক করার রাউট
+    Route::get('/notifications/read', [StudentController::class, 'markAsRead'])->name('student.notifications.read');
 });
 
 

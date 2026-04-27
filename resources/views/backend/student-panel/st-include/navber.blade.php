@@ -30,8 +30,10 @@
     .navbar-dropdown {
         right: 0 !important;
         left: auto !important;
-        width: 300px; /* এটাকে ফিক্সড সাইজ করে দিলাম যাতে ভেঙে না যায় */
-        max-width: 90vw; /* মোবাইলের জন্য রেসপন্সিভ */
+        width: 300px;
+        /* এটাকে ফিক্সড সাইজ করে দিলাম যাতে ভেঙে না যায় */
+        max-width: 90vw;
+        /* মোবাইলের জন্য রেসপন্সিভ */
     }
 
     /* যদি মেনুটা নেভবারের নিচে অতিরিক্ত স্পেস নিয়ে নেয় */
@@ -93,53 +95,58 @@
 
             {{-- বাকি নোটিফিকেশন ও মেসেজ আইকনগুলো আপনার আগের মতোই থাকবে --}}
             <li class="nav-item dropdown">
-    <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#"
-        data-bs-toggle="dropdown">
-        <i class="mdi mdi-bell-outline"></i>
-        @if (Auth::guard('student')->user()->unreadNotifications->count() > 0)
-            <span class="count-symbol bg-danger"></span>
-        @endif
-    </a>
+                <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#"
+                    data-bs-toggle="dropdown">
+                    <i class="mdi mdi-bell-outline"></i>
+                    @if (Auth::guard('student')->user()->unreadNotifications->count() > 0)
+                        <span class="count-symbol bg-danger"></span>
+                    @endif
+                </a>
 
-    <div class="dropdown-menu dropdown-menu-right dropdown-menu-end navbar-dropdown preview-list"
-        aria-labelledby="notificationDropdown" 
-        style="right: 0; left: auto; min-width: 300px; max-width: 320px;">
-        
-        <h6 class="p-3 mb-0 text-center">নোটিফিকেশন</h6>
-        <div class="dropdown-divider"></div>
+                <div class="dropdown-menu dropdown-menu-right dropdown-menu-end navbar-dropdown preview-list"
+                    aria-labelledby="notificationDropdown"
+                    style="right: 0; left: auto; min-width: 300px; max-width: 320px;">
 
-        @forelse(Auth::guard('student')->user()->unreadNotifications as $notification)
-            <a class="dropdown-item preview-item" href="{{ url($notification->data['url'] ?? '#') }}">
-                <div class="preview-thumbnail">
-                    <div class="preview-icon bg-light">
-                        <i class="mdi {{ $notification->data['icon'] ?? 'mdi-bell' }} {{ $notification->data['color'] ?? 'text-primary' }}"></i>
-                    </div>
+                    <h6 class="p-3 mb-0 text-center">নোটিফিকেশন</h6>
+                    <div class="dropdown-divider"></div>
+
+                    @forelse(Auth::guard('student')->user()->unreadNotifications as $notification)
+                        <a class="dropdown-item preview-item" href="{{ url($notification->data['url'] ?? '#') }}">
+                            <div class="preview-thumbnail">
+                                <div class="preview-icon bg-light">
+                                    <i
+                                        class="mdi {{ $notification->data['icon'] ?? 'mdi-bell' }} {{ $notification->data['color'] ?? 'text-primary' }}"></i>
+                                </div>
+                            </div>
+                            <div class="preview-item-content">
+                                <h6 class="preview-subject font-weight-normal mb-1">{{ $notification->data['title'] }}
+                                </h6>
+                                <p class="text-muted ellipsis mb-0" style="white-space: normal; line-height: 1.4;">
+                                    {{ $notification->data['message'] }}
+                                </p>
+                                <p class="text-muted text-small mb-0">
+                                    <i class="mdi mdi-clock-outline me-1"></i>
+                                    {{-- কার্বন ইনস্ট্যান্স ব্যবহার করে বাংলাদেশের টাইমজোন নিশ্চিত করা --}}
+                                    {{ \Carbon\Carbon::parse($notification->created_at)->timezone('Asia/Dhaka')->diffForHumans() }}
+                                </p>
+                            </div>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                    @empty
+                        <a class="dropdown-item preview-item text-center">
+                            <p class="mb-0 text-muted p-2">নতুন কোনো নোটিফিকেশন নেই</p>
+                        </a>
+                    @endforelse
+
+                    @if (Auth::guard('student')->user()->unreadNotifications->count() > 0)
+                        <div class="dropdown-divider"></div>
+                        <p class="p-3 mb-0 text-center">
+                            <a href="{{ route('student.notifications.read') }}" class="text-primary">সবগুলো মার্ক
+                                করুন</a>
+                        </p>
+                    @endif
                 </div>
-                <div class="preview-item-content">
-                    <h6 class="preview-subject font-weight-normal mb-1">{{ $notification->data['title'] }}</h6>
-                    <p class="text-muted ellipsis mb-0" style="white-space: normal; line-height: 1.4;"> 
-                        {{ $notification->data['message'] }} 
-                    </p>
-                    <p class="text-muted text-small mb-0"> 
-                        {{ $notification->created_at->diffForHumans() }} 
-                    </p>
-                </div>
-            </a>
-            <div class="dropdown-divider"></div>
-        @empty
-            <a class="dropdown-item preview-item text-center">
-                <p class="mb-0 text-muted p-2">নতুন কোনো নোটিফিকেশন নেই</p>
-            </a>
-        @endforelse
-
-        @if (Auth::guard('student')->user()->unreadNotifications->count() > 0)
-            <div class="dropdown-divider"></div>
-            <p class="p-3 mb-0 text-center">
-                <a href="#" class="text-primary">সবগুলো মার্ক করুন</a>
-            </p>
-        @endif
-    </div>
-</li>
+            </li>
             <li class="nav-item nav-logout d-none d-lg-block">
                 <form action="{{ route('student.logout') }}" method="POST">
                     @csrf
