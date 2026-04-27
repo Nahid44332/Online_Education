@@ -55,7 +55,7 @@
         <!-- Logo -->
         <img src="{{ asset('backend/images/seetings/'.$sitesettings->logo) }}" alt="Logo" class="logo">
 
-        <h1>Nahid Computer Training Center</h1>
+        <h1>Lina Digital E-Learning Platfrom</h1>
         <p>Phone: 01968-400331 | Address: Kumun, Gazipur Sadar, Gazipur</p>
         <hr>
 

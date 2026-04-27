@@ -110,4 +110,24 @@ class CertificateController extends Controller
 
         return $pdf->download('Certificate_' . $certificate->student->name . '.pdf');
     }
+
+    public function destroy($id)
+{
+    // ১. ডাটাবেজ থেকে সার্টিফিকেটটি খুঁজে বের করা
+    $certificate = \App\Models\Certificate::find($id);
+
+    if (!$certificate) {
+        return back()->with('error', 'মামা, এই সার্টিফিকেট তো খুঁজে পাওয়া যাচ্ছে না!');
+    }
+
+    // ২. যদি কোনো ফাইল (PDF/Image) ফোল্ডারে সেভ করা থাকে, তবে সেটি ডিলিট করা (ঐচ্ছিক)
+    // if ($certificate->file_path) {
+    //     @unlink(public_path('uploads/certificates/' . $certificate->file_path));
+    // }
+
+    // ৩. ডাটাবেজ থেকে ডিলিট করা
+    $certificate->delete();
+
+    return back()->with('success', 'সার্টিফিকেটটি সফলভাবে ডিলিট করা হয়েছে।');
+}
 }

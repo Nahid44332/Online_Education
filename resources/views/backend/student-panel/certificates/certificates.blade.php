@@ -23,7 +23,7 @@
                         </p>
                         
                         <div class="d-grid">
-                            <a href="{{ url('0/student/certificate/download/' . $certificate->id) }}" download class="btn btn-success btn-sm rounded-pill px-4">
+                            <a href="{{ url('/student/certificate/download/' . $certificate->id) }}" download class="btn btn-success btn-sm rounded-pill px-4">
                                 <i class="mdi mdi-download me-1"></i> Download Certificate
                             </a>
                         </div>

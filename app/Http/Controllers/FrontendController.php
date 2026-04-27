@@ -399,9 +399,10 @@ class FrontendController extends Controller
                 toastr()->success('স্বাগতম কাউন্সেলর প্যানেলে');
                 return redirect()->route('counsellor.dashboard');
             }
-            // elseif ($user->position == 'manager') {
-            //     return redirect()->route('manager.dashboard');
-            // }
+            elseif ($user->position == 'manager') {
+                toastr()->success('স্বাগতম ম্যানেজার প্যানেলে');
+                return redirect()->route('manager.dashboard');
+            }
 
             // ডিফল্ট রিডাইরেক্ট যদি কোনো রোল না মিলে
             return redirect()->intended('/panel/dashboard');

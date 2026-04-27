@@ -4,6 +4,7 @@ namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Helpline;
+use App\Models\Manager;
 use App\Models\Student;
 use App\Models\Subadmin;
 use App\Models\TeamLeader;
@@ -791,5 +792,102 @@ class SubadminController extends Controller
         ]);
 
         return back()->with('error', 'রিকোয়েস্টটি রিজেক্ট করা হয়েছে।');
+    }
+
+    //==========Manager================//
+    public function manager()
+    {
+       $managers = Manager::with('subadmin')->orderBy('id', 'desc')->get();
+        return view('backend.manager.manager', compact('managers'));
+    }
+
+    public function managerStore(Request $request)
+    {
+        // ১. subadmins টেবিলে লগইন ডেটা সেভ
+        $subadmin = new Subadmin();
+        $subadmin->name = $request->name;
+        $subadmin->email = $request->email;
+        $subadmin->password = Hash::make($request->password);
+        $subadmin->position = 'manager';
+        $subadmin->status = 1;
+        $subadmin->save();
+
+        // ২. managers টেবিলে পার্সোনাল ডেটা সেভ
+        $manager = new Manager();
+        $manager->subadmin_id = $subadmin->id;
+        $manager->name = $request->name;
+        $manager->designation = $request->designation;
+        $manager->phone = $request->phone;
+        $manager->dob = $request->dob; // Date of Birth
+        $manager->blood = $request->blood;
+        $manager->facebook_link = $request->facebook_link;
+
+        if ($request->file('profile_image')) {
+            $file = $request->file('profile_image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('backend/images/manager'), $filename);
+            $manager->profile_image = 'backend/images/manager/' . $filename;
+        }
+
+        $manager->save();
+        return back()->with('success', 'ম্যানেজার মামাকে সফলভাবে নিয়োগ দেওয়া হয়েছে! ✅');
+    }
+
+    public function managerEdit($id)
+    {
+        $manager = Manager::with('subadmin')->findOrFail($id);
+        return response()->json([
+            'id' => $manager->id,
+            'name' => $manager->name,
+            'email' => $manager->subadmin->email, // সাবএডমিন টেবিল থেকে ইমেইল
+            'designation' => $manager->designation,
+            'phone' => $manager->phone,
+            'dob' => $manager->dob,
+            'blood' => $manager->blood,
+            'facebook_link' => $manager->facebook_link,
+        ]);
+    }
+
+    public function managerUpdate(Request $request)
+    {
+        $manager = Manager::findOrFail($request->id);
+
+        // ১. সাবএডমিন টেবিলে নাম ও ইমেইল আপডেট
+        $subadmin = Subadmin::find($manager->subadmin_id);
+        if ($subadmin) {
+            $subadmin->name = $request->name;
+            $subadmin->email = $request->email;
+            $subadmin->save();
+        }
+
+        // ২. ম্যানেজার টেবিলে ডাটা আপডেট
+        $manager->name = $request->name;
+        $manager->designation = $request->designation;
+        $manager->phone = $request->phone;
+        $manager->dob = $request->dob;
+        $manager->blood = $request->blood;
+        $manager->facebook_link = $request->facebook_link;
+
+        if ($request->file('image')) {
+            // পুরাতন ইমেজ ডিলিট
+            if ($manager->profile_image && file_exists(public_path($manager->profile_image))) {
+                unlink(public_path($manager->profile_image));
+            }
+
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('backend/images/manager'), $filename);
+            $manager->profile_image = 'backend/images/manager/' . $filename;
+        }
+
+        $manager->save();
+        return back()->with('success', 'ম্যানেজারের তথ্য আপডেট হয়েছে! 🔄');
+    }
+
+    public function destroy($id) {
+        $manager = DB::table('managers')->where('id', $id)->first();
+        if($manager->profile_image) unlink(public_path($manager->profile_image));
+        DB::table('managers')->where('id', $id)->delete();
+        return back()->with('success', 'ম্যানেজার বিদায় নিয়েছে! 🗑️');
     }
 }

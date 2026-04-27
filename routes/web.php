@@ -21,6 +21,7 @@ use App\Http\Controllers\backend\HelplineController;
 use App\Http\Controllers\backend\ReportController;
 use App\Http\Controllers\backend\NoticeController;
 use App\Http\Controllers\backend\lockController;
+use App\Http\Controllers\backend\ManagerController;
 use App\Http\Controllers\backend\TestimonialController;
 use App\Http\Controllers\backend\NewsController;
 use App\Http\Controllers\backend\SettingController;
@@ -155,6 +156,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/student/certificate/create', [CertificateController::class, 'studentCertificateCreate']);
     Route::post('/student/certificate/store', [CertificateController::class, 'certificateStore']);
     Route::get('/student/certificate/{id}', [CertificateController::class, 'certificateView']);
+    Route::get('/student/certificate/delete/{id}', [CertificateController::class, 'destroy'])->name('certificate.delete');
     Route::get('/student/certificate/download/{id}', [CertificateController::class, 'downloadCertificate']);
 
 
@@ -232,10 +234,12 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/admin/team-leader/add-points', [SubadminController::class, 'addTlPoints'])->name('admin.add.tl.points');
     Route::get('/team-leader-withdraw-requests', [SubadminController::class, 'withdrawRequests'])->name('admin.team_leader.withdraw.requests');
     Route::post('/admin/withdraw/approve/{id}', [SubadminController::class, 'approveWithdraw'])->name('admin.team_leader.withdraw.approve');
+    //Trainer...
     Route::get('/trainer', [SubadminController::class, 'trainer'])->name('admin.trainer_list');
     Route::post('/add-trainer-points', [SubadminController::class, 'addTrainerPoints'])->name('admin.add.trainer.points');
     Route::get('/trainer-withdraw-requests', [SubadminController::class, 'trainerwithdrawRequests'])->name('admin.trainer.withdraw.requests');
     Route::post('/admin/trainer/withdraw/approve/{id}', [SubadminController::class, 'approveTrainerWithdraw'])->name('admin.trainer.withdraw.approve');
+    //Helpline...
     Route::get('/admin/helpline', [SubadminController::class, 'helpline'])->name('admin.helpline');
     Route::post('/admin/helpline/store', [SubadminController::class, 'store'])->name('admin.helpline.store');
     Route::get('/admin/helpline-staff/delete/{id}', [SubadminController::class, 'delete'])->name('admin.helpline.delete');
@@ -245,6 +249,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/withdraw/requests', [SubadminController::class, 'helplineWithdrawRequests'])->name('admin.helpline.withdraw.requests');
     Route::post('/withdraw/approve/{id}', [SubadminController::class, 'ApproveWithdrawHelpline'])->name('admin.helpline.withdraw.approve');
     Route::Post('/withdraw/reject/{id}', [SubadminController::class, 'RejectWithdraw'])->name('admin.helpline.withdraw.reject');
+    //Counsellor...
     Route::get('/counsellor', [SubadminController::class, 'counsellor'])->name('admin.counsellor');
     Route::get('/counsellor/create', [SubadminController::class, 'counsellorCreate'])->name('admin.counsellor.create');
     Route::post('/counsellor/store', [SubadminController::class, 'counsellorStore'])->name('counsellor.store');
@@ -257,6 +262,13 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/counsellor/withdraw-request', [SubadminController::class, 'counsellorWithdrawRequest'])->name('admin.counsellor.withdraw.request');
     Route::post('/counsellor-withdraw/approve/{id}', [SubadminController::class, 'approveCounsellorWithdraw'])->name('admin.counsellor.withdraw.approve');
     Route::post('/counsellor-withdraw/reject/{id}', [SubadminController::class, 'rejectCounsellorWithdraw'])->name('admin.counsellor.withdraw.reject');
+    //Manager...
+    Route::get('/manager', [SubadminController::class, 'manager'])->name('admin.manager');
+    Route::post('/manager/store', [SubadminController::class, 'managerStore'])->name('admin.manager.store');
+    Route::get('/manager/edit/{id}', [SubadminController::class, 'managerEdit'])->name('edit');
+    Route::post('/manager/update', [SubadminController::class, 'managerUpdate'])->name('admin.manager.update');
+    Route::get('/manager/delete/{id}', [SubadminController::class, 'destroy'])->name('admin.manager.delete');
+    Route::post('/manager/add-points', [SubadminController::class, 'addPoints'])->name('add.points');
 });
 
 
@@ -272,35 +284,29 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
 
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
     Route::post('/logout', [StudentController::class, 'logout'])->name('student.logout');
-
     // Profile
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
     Route::get('/profile/edit', [StudentController::class, 'profileEdit'])->name('student.profile.edit');
     Route::post('/profile/update', [StudentController::class, 'profileUpdate'])->name('student.profile.update');
     Route::post('/password/update', [StudentController::class, 'passwordUpdate'])->name('student.password.update');
-
     // Referral & Withdraw
     Route::get('/referral', [ReferralController::class, 'referral'])->name('student.referral');
     Route::get('/referral-history', [ReferralController::class, 'referralHistroy'])->name('student.referral-histroy');
     Route::get('/withdraw', [WithdrawController::class, 'withdrawPage'])->name('student.withdraw.page');
     Route::post('/withdraw', [WithdrawController::class, 'withdrawRequest'])->name('student.withdraw');
-
     // Academic
     Route::get('/course', [StudentController::class, 'Course'])->name('student.course');
     Route::get('/admit-card', [StudentController::class, 'viewAdmitCard'])->name('student.admit-card');
     Route::get('/admit-card/download/{id}', [StudentController::class, 'downloadAdmitCard'])->name('student.admit-card.download');
-
     //Exam, Result, Certificate
     Route::get('/student/exams', [StudentController::class, 'myExams'])->name('student.exams');
     Route::get('/my-results', [StudentController::class, 'viewResult'])->name('student.result');
     Route::get('/my-certificates', [StudentController::class, 'myCertificates'])->name('student.certificates');
     Route::get('/certificate/download/{id}', [StudentController::class, 'downloadCertificate'])->name('student.certificate.download');
-
     //passbook...
     Route::get('/passbook', [StudentController::class, 'passbook'])->name('student.passbook');
     Route::get('/passbook/download', [StudentController::class, 'downloadPassbookPDF'])->name('student.passbook.download');
-
-    // স্টুডেন্টের সব নোটিফিকেশন পড়া হিসেবে মার্ক করার রাউট
+  // স্টুডেন্টের সব নোটিফিকেশন পড়া হিসেবে মার্ক করার রাউট
     Route::get('/notifications/read', [StudentController::class, 'markAsRead'])->name('student.notifications.read');
 });
 
@@ -399,5 +405,10 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/counsellor/profile/update', [CounsellorController::class, 'updateProfile'])->name('counsellor.profile.update');
         Route::get('/counsellor/security', [CounsellorController::class, 'changePassword'])->name('counsellor.security');
         Route::post('/counsellor/password-update', [CounsellorController::class, 'updatePassword'])->name('counsellor.password.update');
+    });
+
+     // Manager Panel Route
+    Route::group(['middleware' => 'subadmin.role:manager'], function () {    
+        Route::get('/manager/dashboard', [ManagerController::class, 'dashboard'])->name('manager.dashboard');
     });
 });
