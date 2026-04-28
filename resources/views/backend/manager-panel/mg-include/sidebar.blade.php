@@ -42,12 +42,12 @@
                 </a>
             </li>
             <li class="nav-item"> 
-                <a class="nav-link" href="{{ url('/manager/students/active') }}"> 
+                <a class="nav-link" href="{{ route('manager.student', 'active') }}"> 
                     <i class="mdi mdi-account-check me-2"></i> Active Students 
                 </a>
             </li>
             <li class="nav-item"> 
-                <a class="nav-link" href="{{ url('/manager/students/inactive') }}"> 
+                <a class="nav-link" href="{{ route('manager.student', 'inactive') }}"> 
                     <i class="mdi mdi-account-remove me-2"></i> Inactive Students 
                 </a>
             </li>

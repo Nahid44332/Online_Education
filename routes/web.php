@@ -306,7 +306,7 @@ Route::group(['prefix' => 'student', 'middleware' => ['auth:student']], function
     //passbook...
     Route::get('/passbook', [StudentController::class, 'passbook'])->name('student.passbook');
     Route::get('/passbook/download', [StudentController::class, 'downloadPassbookPDF'])->name('student.passbook.download');
-  // স্টুডেন্টের সব নোটিফিকেশন পড়া হিসেবে মার্ক করার রাউট
+    // স্টুডেন্টের সব নোটিফিকেশন পড়া হিসেবে মার্ক করার রাউট
     Route::get('/notifications/read', [StudentController::class, 'markAsRead'])->name('student.notifications.read');
 });
 
@@ -336,11 +336,11 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/password/update', [TeacherPanelController::class, 'updatePassword'])->name('teacher.password.update');
         Route::get('/teacher/student-results', [TeacherPanelController::class, 'studentResults'])->name('teacher.student.results');
         Route::post('/gift-points', [TeacherPanelController::class, 'giftPoint'])->name('teacher.gift.point');
-         Route::get('/passbook', [TeacherPanelController::class, 'passbook'])->name('passbook');
+        Route::get('/passbook', [TeacherPanelController::class, 'passbook'])->name('passbook');
     });
 
     //Team Leader Panel Route
-    Route::group(['middleware' => 'subadmin.role:team_leader'], function () {    
+    Route::group(['middleware' => 'subadmin.role:team_leader'], function () {
         Route::get('/team-leader/dashboard', [TeamLeaderPanelController::class, 'dashboard'])->name('team_leader.dashboard');
         Route::get('/team-leader/my-students', [TeamLeaderPanelController::class, 'myStudents'])->name('team_leader.students');
         Route::get('/team-leader/transactions', [TeamLeaderPanelController::class, 'transactions'])->name('team_leader.transactions');
@@ -357,11 +357,11 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::delete('/trainers/delete/{id}', [TeamLeaderPanelController::class, 'destroy'])->name('team_leader.trainers.delete');
         Route::get('/profile', [TeamLeaderPanelController::class, 'profile'])->name('team_leader.profile');
         Route::post('/profile/update', [TeamLeaderPanelController::class, 'updateProfile'])->name('team_leader.profile.update');
-    Route::post('/profile/password', [TeamLeaderPanelController::class, 'updatePassword'])->name('team_leader.password.update');
+        Route::post('/profile/password', [TeamLeaderPanelController::class, 'updatePassword'])->name('team_leader.password.update');
     });
 
     // Trainer Panel Route
-    Route::group(['middleware' => 'subadmin.role:trainer'], function () {    
+    Route::group(['middleware' => 'subadmin.role:trainer'], function () {
         Route::get('/trainer/dashboard', [TrainerPanelController::class, 'dashboard'])->name('trainer.dashboard');
         Route::get('/trainer/students', [TrainerPanelController::class, 'studentList'])->name('trainer.stdent.list');
         Route::get('/trainer/profile', [TrainerPanelController::class, 'profile'])->name('trainer.profile');
@@ -376,7 +376,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
     });
 
     // Helpline Panel Route
-    Route::group(['middleware' => 'subadmin.role:helpline'], function () {    
+    Route::group(['middleware' => 'subadmin.role:helpline'], function () {
         Route::get('/helpline/dashboard', [HelplineController::class, 'dashboard'])->name('helpline.dashboard');
         Route::get('/helpline/meeting', [HelplineController::class, 'meeting'])->name('helpline.meeting');
         Route::post('/meeting-desk/update', [HelplineController::class, 'UpdateMeetingDesk'])->name('meeting.update');
@@ -390,8 +390,8 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
     });
 
     // Counsellor Panel Route
-    Route::group(['middleware' => 'subadmin.role:counsellor'], function () {    
-        Route::get('/counsellor/dashboard', [CounsellorController::class, 'dashboard'])->name('counsellor.dashboard');  
+    Route::group(['middleware' => 'subadmin.role:counsellor'], function () {
+        Route::get('/counsellor/dashboard', [CounsellorController::class, 'dashboard'])->name('counsellor.dashboard');
         Route::get('/counsellor/new-leads', [CounsellorController::class, 'leads'])->name('counsellor.new-leads');
         Route::post('/counsellor/student-update/{id}', [CounsellorController::class, 'updateStatus'])->name('counsellor.student.update');
         Route::post('/counsellor/student-update/{id}', [CounsellorController::class, 'updateStatus'])->name('counsellor.student.update');
@@ -407,10 +407,11 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/counsellor/password-update', [CounsellorController::class, 'updatePassword'])->name('counsellor.password.update');
     });
 
-     // Manager Panel Route
-    Route::group(['middleware' => 'subadmin.role:manager'], function () {    
+    // Manager Panel Route
+    Route::group(['middleware' => 'subadmin.role:manager'], function () {
         Route::get('/manager/dashboard', [ManagerController::class, 'dashboard'])->name('manager.dashboard');
-        Route::get('/manager/student', [ManagerController::class, 'allStudent'])->name('manager.student');
-        Route::post('/students/update-points', [ManagerController::class, 'updatePoints'])->name('students.updatePoints');
+        Route::get('/manager/student/{status?}', [ManagerController::class, 'allStudent'])->name('manager.student');
+        Route::post('/manager/students/update-points', [ManagerController::class, 'updatePoints'])->name('students.updatePoints');
+        Route::get('/manager/students/view/{id}', [ManagerController::class, 'viewStudent'])->name('manager.students.view');
     });
 });

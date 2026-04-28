@@ -57,14 +57,10 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="#" class="btn btn-sm btn-outline-info" title="View"><i
-                                                            class="mdi mdi-eye"></i></a>
-                                                    <a href="#" class="btn btn-sm btn-outline-warning"
-                                                        title="Edit"><i class="mdi mdi-pencil"></i></a>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                                        title="Delete"><i class="mdi mdi-delete"></i></button>
-                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-info"
+                                                    title="View Profile" onclick="viewStudent({{ $student->id }})">
+                                                    <i class="mdi mdi-eye"></i>
+                                                    </button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -77,39 +73,81 @@
         </div>
     </div>
     <div class="modal fade" id="pointModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Give Points to <span id="studentName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('students.updatePoints') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="student_id" id="modal_student_id">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Current Points: <b id="currentPoints"></b></label>
+                            <input type="number" name="points" class="form-control"
+                                placeholder="Enter points (e.g. 10 or -5)" required>
+                            <small class="text-muted">পয়েন্ট যোগ করতে পজিটিভ (১০) আর কমাতে নেগেটিভ (-৫) নাম্বার দিন।</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-gradient-primary">Update Points</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Give Points to <span id="studentName"></span></h5>
+                <h5 class="modal-title">Student Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('students.updatePoints') }}" method="POST">
-                @csrf
-                <input type="hidden" name="student_id" id="modal_student_id">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Current Points: <b id="currentPoints"></b></label>
-                        <input type="number" name="points" class="form-control" placeholder="Enter points (e.g. 10 or -5)" required>
-                        <small class="text-muted">পয়েন্ট যোগ করতে পজিটিভ (১০) আর কমাতে নেগেটিভ (-৫) নাম্বার দিন।</small>
-                    </div>
+            <div class="modal-body" id="student_details">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-gradient-primary">Update Points</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 @endsection
 @push('script')
-    <script>
-function givePoint(id, name, points) {
-    document.getElementById('modal_student_id').value = id;
-    document.getElementById('studentName').innerText = name;
-    document.getElementById('currentPoints').innerText = points;
-    var myModal = new bootstrap.Modal(document.getElementById('pointModal'));
-    myModal.show();
-}
+<script>
+    // পয়েন্ট দেওয়ার ফাংশন
+    function givePoint(id, name, points) {
+        document.getElementById('modal_student_id').value = id;
+        document.getElementById('studentName').innerText = name;
+        document.getElementById('currentPoints').innerText = points;
+        var myModal = new bootstrap.Modal(document.getElementById('pointModal'));
+        myModal.show();
+    }
+
+    // স্টুডেন্ট ভিউ করার ফাংশন
+    function viewStudent(id) {
+        // স্পিনার দেখানো
+        $('#student_details').html('<div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>');
+        
+        var myModal = new bootstrap.Modal(document.getElementById('viewModal'));
+        myModal.show();
+
+        // Ajax কল
+        $.ajax({
+            // এখানে Route এর নাম ব্যবহার করলে URL ভুল হওয়ার সুযোগ নেই
+            // আপনার Route ফাইলে এই নামের রাউট থাকতে হবে: ->name('manager.students.view')
+            url: "{{ url('panel/manager/students/view') }}/" + id, 
+            type: "GET",
+            dataType: "html",
+            success: function(data) {
+                $('#student_details').html(data);
+            },
+            error: function(xhr) {
+                console.log(xhr.responseText); // এরর কি আসে সেটা কনসোলে দেখতে পারবেন
+                $('#student_details').html('<p class="text-danger text-center">কিছু একটা ভুল হয়েছে! আবার চেষ্টা করুন।</p>');
+            }
+        });
+    }
 </script>
 @endpush

@@ -15,3 +15,4 @@
  <!-- Custom js for this page -->
  <script src="{{ asset('backend/assets/js/dashboard.js') }}"></script>
  <!-- End custom js for this page -->
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
