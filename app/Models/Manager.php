@@ -11,7 +11,8 @@ class Manager extends Model
 
     protected $guarded = [];
 
-    public function subadmin() {
-    return $this->belongsTo(Subadmin::class, 'subadmin_id', 'id');
-}
+    public function manager()
+    {
+        return $this->hasOne(Manager::class, 'subadmin_id', 'id');
+    }
 }

@@ -3,8 +3,15 @@
         <li class="nav-item nav-profile">
             <a href="{{ url('/manager/profile') }}" class="nav-link">
                 <div class="nav-profile-image">
-                    <img src="{{ !empty(Auth::guard('subadmin')->user()->manager->profile_image) ? asset(Auth::guard('subadmin')->user()->manager->profile_image) : asset('backend/images/no_image.jpg') }}" alt="profile" />
-                    <span class="login-status online"></span>
+                    <div class="nav-profile-image">
+                        @if ($managers && $managers->profile_image)
+                            <img src="{{ asset($managers->profile_image) }}" alt="profile" />
+                        @else
+                            <img src="{{ asset('backend/images/no_image.jpg') }}" alt="profile" />
+                        @endif
+                        <span class="login-status online"></span>
+                </div>
+                <span class="login-status online"></span>
                 </div>
                 <div class="nav-profile-text d-flex flex-column">
                     <span class="font-weight-bold mb-2">{{ Auth::guard('subadmin')->user()->name }}</span>
@@ -22,14 +29,35 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
-                <span class="menu-title">Students List</span>
-                <i class="mdi mdi-account-group menu-icon"></i>
-            </a>
-        </li>
+    <a class="nav-link" data-bs-toggle="collapse" href="#students-dropdown" aria-expanded="false" aria-controls="students-dropdown">
+        <span class="menu-title">Students Management</span>
+        <i class="menu-arrow"></i>
+        <i class="mdi mdi-account-group menu-icon"></i>
+    </a>
+    <div class="collapse" id="students-dropdown">
+        <ul class="nav flex-column sub-menu">
+            <li class="nav-item"> 
+                <a class="nav-link" href="{{ route('manager.student') }}"> 
+                    <i class="mdi mdi-view-list me-2"></i> All Students 
+                </a>
+            </li>
+            <li class="nav-item"> 
+                <a class="nav-link" href="{{ url('/manager/students/active') }}"> 
+                    <i class="mdi mdi-account-check me-2"></i> Active Students 
+                </a>
+            </li>
+            <li class="nav-item"> 
+                <a class="nav-link" href="{{ url('/manager/students/inactive') }}"> 
+                    <i class="mdi mdi-account-remove me-2"></i> Inactive Students 
+                </a>
+            </li>
+        </ul>
+    </div>
+</li>
 
         <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#teacher-menu" aria-expanded="false" aria-controls="teacher-menu">
+            <a class="nav-link" data-bs-toggle="collapse" href="#teacher-menu" aria-expanded="false"
+                aria-controls="teacher-menu">
                 <span class="menu-title">Teachers</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-account-tie menu-icon"></i>
@@ -50,7 +78,8 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#finance-menu" aria-expanded="false" aria-controls="finance-menu">
+            <a class="nav-link" data-bs-toggle="collapse" href="#finance-menu" aria-expanded="false"
+                aria-controls="finance-menu">
                 <span class="menu-title">Finance</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-cash-multiple menu-icon"></i>

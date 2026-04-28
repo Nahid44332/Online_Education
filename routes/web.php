@@ -410,5 +410,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
      // Manager Panel Route
     Route::group(['middleware' => 'subadmin.role:manager'], function () {    
         Route::get('/manager/dashboard', [ManagerController::class, 'dashboard'])->name('manager.dashboard');
+        Route::get('/manager/student', [ManagerController::class, 'allStudent'])->name('manager.student');
+        Route::post('/students/update-points', [ManagerController::class, 'updatePoints'])->name('students.updatePoints');
     });
 });
