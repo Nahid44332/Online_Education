@@ -5,7 +5,21 @@
         <div class="page-header">
             <h3 class="page-title"> Students List </h3>
         </div>
-
+        <div class="row mb-3">
+    <div class="col-md-4">
+        <form action="{{ route('manager.student', $status) }}" method="GET">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by Name, Phone or ID..." value="{{ request('search') }}">
+                <button class="btn btn-gradient-primary" type="submit">
+                    <i class="mdi mdi-magnify"></i> Search
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('manager.student', $status) }}" class="btn btn-light">Clear</a>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
         <div class="row">
             <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
@@ -149,5 +163,15 @@
             }
         });
     }
+</script>
+<script>
+    $(document).ready(function(){
+  $("#mySearchInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("tbody tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
 </script>
 @endpush

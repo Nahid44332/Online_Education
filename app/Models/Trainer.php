@@ -12,7 +12,12 @@ class Trainer extends Model
     protected $guarded = [];
 
     public function subadmin()
+    {
+        return $this->belongsTo(Subadmin::class, 'subadmin_id');
+    }
+
+    public function teamLeader()
 {
-    return $this->belongsTo(Subadmin::class, 'subadmin_id');
+    return $this->belongsTo(TeamLeader::class, 'team_leader_id');
 }
 }

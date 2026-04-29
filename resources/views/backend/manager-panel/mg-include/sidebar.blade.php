@@ -58,14 +58,17 @@
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#teacher-menu" aria-expanded="false"
                 aria-controls="teacher-menu">
-                <span class="menu-title">Teachers</span>
+                <span class="menu-title">Subadmin Management</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-account-tie menu-icon"></i>
             </a>
             <div class="collapse" id="teacher-menu">
                 <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"> <a class="nav-link" href="#">Teachers List</a></li>
-                    <li class="nav-item"> <a class="nav-link" href="#">Featured Teachers</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{route('manager.trainer')}}">Trainer</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{route('manager.team-leader')}}">Team Leader</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{route('manager.counselor')}}">Counsellor</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{route('manager.teacher.all')}}">Teacher</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{route('manager.helpline.all')}}">Helpline</a></li>
                 </ul>
             </div>
         </li>
