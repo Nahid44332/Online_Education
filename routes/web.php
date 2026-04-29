@@ -413,6 +413,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/manager/student/{status?}', [ManagerController::class, 'allStudent'])->name('manager.student');
         Route::post('/manager/students/update-points', [ManagerController::class, 'updatePoints'])->name('students.updatePoints');
         Route::get('/manager/students/view/{id}', [ManagerController::class, 'viewStudent'])->name('manager.students.view');
+        Route::post('/manager/student/reset-password', [ManagerController::class, 'resetStudentPassword'])->name('manager.student.resetPassword');
         Route::get('/manager/trainer', [ManagerController::class, 'trainer'])->name('manager.trainer');
         Route::get('/manager/trainer/view/{id}', [ManagerController::class, 'viewTrainer'])->name('manager.trainer.view');
         Route::post('/manager/trainer/update-points', [ManagerController::class, 'updateTrainerPoints'])->name('manager.trainer.updatePoints');
@@ -433,5 +434,8 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/manager/helpline/view/{id}', [ManagerController::class, 'viewHelpline']);
         Route::post('/panel/manager/helpline/update-points', [ManagerController::class, 'updateHelplinePoints'])->name('manager.helpline.updatePoints');
         Route::post('/panel/manager/helpline/reset-password', [ManagerController::class, 'resetHelplinePassword'])->name('manager.helpline.resetPassword');
+        Route::get('/panel/manager/course/all', [ManagerController::class, 'allCourses'])->name('manager.course.all');
+        Route::get('/manager/course/edit/{id}', [ManagerController::class, 'editCourse']);
+        Route::post('/manager/course/update', [ManagerController::class, 'updateCourse'])->name('manager.course.update');
     });
 });

@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="{{ url('/manager/profile') }}" class="nav-link">
+            <a href="{{ route('manager.dashboard') }}" class="nav-link">
                 <div class="nav-profile-image">
                     <div class="nav-profile-image">
                         @if ($managers && $managers->profile_image)
@@ -74,7 +74,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('manager.course.all')}}">
                 <span class="menu-title">Courses</span>
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>

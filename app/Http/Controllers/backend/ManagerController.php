@@ -118,6 +118,27 @@ class ManagerController extends Controller
         </table>";
     }
 
+    public function resetStudentPassword(Request $request)
+    {
+        $request->validate([
+            'student_id'   => 'required|exists:students,id',
+            'new_password' => 'required|min:6',
+        ]);
+
+        $student = \App\Models\Student::find($request->student_id);
+
+        // যদি স্টুডেন্টের লগইন ডিটেইলস subadmin টেবিলে থাকে (আপনার আগের কোড অনুযায়ী)
+        $subadmin = \App\Models\Subadmin::find($student->subadmin_id);
+
+        if ($subadmin) {
+            $subadmin->password = Hash::make($request->new_password);
+            $subadmin->save();
+
+            return back()->with('success', 'স্টুডেন্টের পাসওয়ার্ড সফলভাবে আপডেট হয়েছে!');
+        }
+
+        return back()->with('error', 'স্টুডেন্ট অ্যাকাউন্ট পাওয়া যায়নি!');
+    }
     public function trainer()
     {
         $user = Auth::guard('subadmin')->user();
@@ -499,4 +520,55 @@ class ManagerController extends Controller
         }
         return back()->with('error', 'অ্যাকাউন্ট পাওয়া যায়নি!');
     }
+
+    public function allCourses()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = \App\Models\Manager::where('subadmin_id', $user->id)->first();
+        $courses = \App\Models\Course::withCount('students')->latest()->get();
+        return view('backend.manager-panel.course.course', compact('courses', 'managers'));
+    }
+
+    // এডিটের জন্য ডাটা পাঠানো
+    public function editCourse($id)
+    {
+        $course = Course::find($id);
+        return response()->json($course);
+    }
+
+    // ডাটা আপডেট করা
+   public function updateCourse(Request $request)
+{
+    // ১. ভ্যালিডেশন
+    $request->validate([
+        'course_id'   => 'required|exists:courses,id',
+        'title'       => 'required|string|max:255',
+        'course_fee'  => 'required|numeric',
+        'thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:2048',
+    ]);
+
+    try {
+        $course = \App\Models\Course::findOrFail($request->course_id);
+        $course->title = $request->title;
+        $course->course_fee = $request->course_fee;
+
+        if ($request->hasFile('thumbnail')) {
+            if ($course->thumbnail && file_exists(public_path('backend/images/courses/' . $course->thumbnail))) {
+                unlink(public_path('backend/images/courses/' . $course->thumbnail));
+            }
+
+            $image = $request->file('thumbnail');
+            $imageName = 'course-' . time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('backend/images/courses'), $imageName);
+            $course->thumbnail = $imageName;
+        }
+
+        $course->save();
+
+        return back()->with('success', 'কোর্সটি সফলভাবে আপডেট করা হয়েছে, মামা!');
+
+    } catch (\Exception $e) {
+        return back()->with('error', 'উফ! কিছু একটা সমস্যা হয়েছে: ' . $e->getMessage());
+    }
+}
 }
