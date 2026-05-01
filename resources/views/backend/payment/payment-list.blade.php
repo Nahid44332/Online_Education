@@ -15,11 +15,11 @@
                             <tr>
                                 <th class="text-nowrap ps-3">SL</th>
                                 <th class="text-nowrap">Student Name</th>
-                                <th class="text-nowrap">Student ID</th>
-                                <th class="text-nowrap">Total Fee</th>
+                                <th class="text-nowrap">Payment Method</th>
                                 <th class="text-nowrap">Paid</th>
-                                <th class="text-nowrap">Date</th>
+                                <th class="text-nowrap">Transaction ID</th>
                                 <th class="text-nowrap">Note</th>
+                                <th class="text-nowrap">Date</th>
                                 <th class="text-nowrap pe-3">Action</th>
                             </tr>
                         </thead>
@@ -28,16 +28,18 @@
                                 <tr>
                                     <td class="ps-3">{{ $loop->iteration }}</td>
                                     {{-- স্টুডেন্ট না থাকলে এরর দিবে না --}}
-                                    <td class="text-nowrap fw-bold">{{ $payment->student->name ?? 'Deleted Student' }}</td>
-                                    <td><span class="badge bg-light text-dark border">#{{ $payment->student->id ?? 'N/A' }}</span></td>
+                                    <td class="text-nowrap fw-bold">{{ $payment->student->name ?? 'Deleted Student' }} <br>
+                                        <span class="badge bg-light text-dark border">#{{ $payment->student->id ?? 'N/A' }}</span>
+                                    </td>
                                     
-                                    <td class="text-nowrap">৳{{ number_format($payment->course->course_fee ?? 0, 2) }}</td>
+                                    <td class="text-nowrap">{{$payment->method}}</td>
                                     <td class="text-success fw-bold text-nowrap">৳{{ number_format($payment->amount ?? 0, 2) }}</td>
+                                    <td class="text->nowrap">{{$payment->transaction_id}}</td>
                                     
-                                    <td class="text-nowrap small">{{ $payment->created_at ? $payment->created_at->format('d M Y') : 'N/A' }}</td>
                                     <td>
                                         <small class="text-muted">{{ Str::limit($payment->note ?? '---', 20) }}</small>
                                     </td>
+                                    <td class="text-nowrap small">{{ $payment->created_at ? $payment->created_at->format('d M Y') : 'N/A' }}</td>
                                     <td class="pe-3">
                                         <div class="btn-group btn-group-sm">
                                             {{-- স্টুডেন্ট আইডি না থাকলে ভিউ বাটন ডিজেবল রাখা ভালো --}}
@@ -53,7 +55,7 @@
                                                 <i class="fa-solid fa-download"></i>
                                             </a>
                                             
-                                            <a href="{{ url('/payment/delete/' . $payment->id) }}" 
+                                            <a href="{{ url('/admin/payment/delete/' . $payment->id) }}" 
                                                class="btn btn-outline-danger"
                                                onclick="return confirm('Are you sure?');" title="Delete">
                                                 <i class="fa-solid fa-trash"></i>

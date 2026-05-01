@@ -31,6 +31,8 @@ class PaymentController extends Controller
     $payment->student_id = $student_Id;
     $payment->course_id = $student->course_id;
     $payment->amount = $request->amount;
+    $payment->method = $request->method;
+    $payment->transaction_id = $request->transaction_id;
     $payment->payment_date = $request->payment_date;
     $payment->note = $request->note;
 

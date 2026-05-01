@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('course_id')->nullable();
             $table->decimal('amount', 10, 2);       // নতুন পেমেন্ট
+            $table->string('method');        // bkash, nagad, rocket
+            $table->string('transaction_id')->unique();
             $table->date('payment_date');
             $table->string('note')->nullable();
             $table->timestamps();

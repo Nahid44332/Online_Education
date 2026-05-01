@@ -138,6 +138,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::post('/payments/store/{student_id}', [PaymentController::class, 'paymentStore'])->name('admin.payments.store');
     Route::get('/student/payments/{id}', [PaymentController::class, 'getStudentPayments']);
     Route::get('/payment/download/{id}', [PaymentController::class, 'paymentPrint']);
+    Route::get('/payment/delete/{id}', [PaymentController::class, 'paymentDelete']);
     Route::get('/admit-card', [admitCardController::class, 'admitCard']);
     Route::get('/admit-card/create', [admitCardController::class, 'admitCardCreate']);
     Route::get('/admit-card/delete/{id}', [admitCardController::class, 'admitDelete']);
