@@ -10,4 +10,9 @@ class Notice extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function author()
+    {
+        return $this->belongsTo(Subadmin::class, 'created_by');
+    }
 }

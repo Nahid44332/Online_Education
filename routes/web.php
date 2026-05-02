@@ -438,5 +438,16 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/panel/manager/course/all', [ManagerController::class, 'allCourses'])->name('manager.course.all');
         Route::get('/manager/course/edit/{id}', [ManagerController::class, 'editCourse']);
         Route::post('/manager/course/update', [ManagerController::class, 'updateCourse'])->name('manager.course.update');
+        Route::get('/manager/payment', [ManagerController::class, 'payment'])->name('manager.payment.history');
+        Route::get('/manager/withdraw-history', [ManagerController::class, 'withdrawHistory'])->name('manager.withdraw.history');
+        Route::get('/manager/subadmin-withdraw-history', [ManagerController::class, 'subadminWithdrawHistory'])->name('manager.subadmin-withdraw.history');
+        Route::get('/manager/notice', [ManagerController::class, 'notice'])->name('manager.notice');
+        Route::get('/manager/notice/create', [ManagerController::class, 'noticeCreate'])->name('manager.notice.create');
+        Route::post('/manager/notice/store', [ManagerController::class, 'noticeStore'])->name('manager.notice.store');
+        Route::post('panel/manager/notice/status/{id}', [ManagerController::class, 'noticeStatus'])->name('manager.notice.status'); // এখানে 'manager.' যুক্ত করুন
+        Route::get('/manager/notice/edit/{id}', [ManagerController::class, 'noticeEdit'])->name('manager.notice.edit');
+        Route::post('/manager/notice/update/{id}', [ManagerController::class, 'noticeUpdate'])->name('[manager.notice.update');
+        Route::get('/manager/notice/delete/{id}', [ManagerController::class, 'noticeDelete'])->name('manager.notice.delete');
+        Route::get('/contacts', [ManagerController::class, 'contactList'])->name('manager.contacts');
     });
 });

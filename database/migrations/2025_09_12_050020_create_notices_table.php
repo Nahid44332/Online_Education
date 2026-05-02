@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('date')->default(now());
             $table->boolean('status')->default(1); // 1 = Active, 0 = Inactive
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
     }

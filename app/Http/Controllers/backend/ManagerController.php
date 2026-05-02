@@ -7,12 +7,15 @@ use App\Models\Counsellor;
 use App\Models\Course;
 use App\Models\Helpline;
 use App\Models\Manager;
+use App\Models\Notice;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\Subadmin;
 use App\Models\Teacher;
 use App\Models\TeamLeader;
 use App\Models\Trainer;
+use App\Models\Withdrawal;
+use App\Models\WithdrawRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -537,38 +540,155 @@ class ManagerController extends Controller
     }
 
     // ডাটা আপডেট করা
-   public function updateCourse(Request $request)
-{
-    // ১. ভ্যালিডেশন
-    $request->validate([
-        'course_id'   => 'required|exists:courses,id',
-        'title'       => 'required|string|max:255',
-        'course_fee'  => 'required|numeric',
-        'thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:2048',
-    ]);
+    public function updateCourse(Request $request)
+    {
+        // ১. ভ্যালিডেশন
+        $request->validate([
+            'course_id'   => 'required|exists:courses,id',
+            'title'       => 'required|string|max:255',
+            'course_fee'  => 'required|numeric',
+            'thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,webp,avif|max:2048',
+        ]);
 
-    try {
-        $course = \App\Models\Course::findOrFail($request->course_id);
-        $course->title = $request->title;
-        $course->course_fee = $request->course_fee;
+        try {
+            $course = \App\Models\Course::findOrFail($request->course_id);
+            $course->title = $request->title;
+            $course->course_fee = $request->course_fee;
 
-        if ($request->hasFile('thumbnail')) {
-            if ($course->thumbnail && file_exists(public_path('backend/images/courses/' . $course->thumbnail))) {
-                unlink(public_path('backend/images/courses/' . $course->thumbnail));
+            if ($request->hasFile('thumbnail')) {
+                if ($course->thumbnail && file_exists(public_path('backend/images/courses/' . $course->thumbnail))) {
+                    unlink(public_path('backend/images/courses/' . $course->thumbnail));
+                }
+
+                $image = $request->file('thumbnail');
+                $imageName = 'course-' . time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('backend/images/courses'), $imageName);
+                $course->thumbnail = $imageName;
             }
 
-            $image = $request->file('thumbnail');
-            $imageName = 'course-' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('backend/images/courses'), $imageName);
-            $course->thumbnail = $imageName;
+            $course->save();
+
+            return back()->with('success', 'কোর্সটি সফলভাবে আপডেট করা হয়েছে, মামা!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'উফ! কিছু একটা সমস্যা হয়েছে: ' . $e->getMessage());
+        }
+    }
+
+    public function payment()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $payments = Payment::with('student')->get();
+        return view('backend.manager-panel.history.payment-history', compact('managers', 'payments'));
+    }
+
+    public function withdrawHistory()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $withdrawals = WithdrawRequest::with('student')->latest()->get();
+        return view('backend.manager-panel.history.withdraw-history', compact('managers', 'withdrawals'));
+    }
+
+    public function subadminWithdrawHistory()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+
+        $withdrawals = Withdrawal::with(['teacher', 'team_leader', 'trainer', 'helpline', 'counsellor'])
+            ->latest()
+            ->get();
+
+        return view('backend.manager-panel.history.subadmin-withdraw-history', compact('managers', 'withdrawals'));
+    }
+
+    public function notice()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $notices = Notice::latest()->get();
+        return view('backend.manager-panel.notice.notice', compact('managers', 'notices'));
+    }
+
+    public function noticeCreate()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        return view('backend.manager-panel.notice.create', compact('managers'));
+    }
+
+    public function noticeStore(Request $request)
+    {
+        // ১. ভ্যালিডেশন
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required',
+            'date' => 'nullable|date',
+        ]);
+
+        // ২. ডাটাবেজে সেভ
+        // খেয়াল করবেন আপনার মডেলের নাম 'Notice' কি না এবং কলামের নামগুলো ঠিক আছে কি না
+        \App\Models\Notice::create([
+            'title'       => $request->title,
+            'description' => $request->description,
+            'date'        => $request->date ?? now()->toDateString(),
+            'status'      => $request->status,
+            'created_by' => auth()->guard('subadmin')->id(),
+        ]);
+
+        // ৩. রিডাইরেক্ট
+        return redirect()->route('manager.notice')->with('success', 'মামা, নোটিশটা একদম কড়কড়েভাবে সেভ হয়েছে! 🚀');
+    }
+
+    public function noticeStatus($id)
+    {
+        $notice = \App\Models\Notice::findOrFail($id);
+
+        // স্ট্যাটাস ১ থাকলে ০ হবে, ০ থাকলে ১ হবে
+        if ($notice->status == 1) {
+            $notice->status = 0;
+            $message = 'মামা, নোটিশটা আনপাবলিশ করা হয়েছে!';
+        } else {
+            $notice->status = 1;
+            $message = 'মামা, নোটিশটা এখন লাইভ!';
         }
 
-        $course->save();
+        $notice->save();
 
-        return back()->with('success', 'কোর্সটি সফলভাবে আপডেট করা হয়েছে, মামা!');
-
-    } catch (\Exception $e) {
-        return back()->with('error', 'উফ! কিছু একটা সমস্যা হয়েছে: ' . $e->getMessage());
+        return back()->with('success', $message);
     }
-}
+
+    public function noticeDelete($id)
+    {
+        $notice = Notice::findOrFail($id);
+        $notice->delete();
+
+        return back()->with('success', 'মামা, নোটিশটা একদম ডিলিট করে দিয়েছি! 🗑️');
+    }
+
+    public function noticeUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+        ]);
+
+        $notice = \App\Models\Notice::findOrFail($id);
+        $notice->update([
+            'title'       => $request->title,
+            'description' => $request->description,
+            'date'        => $request->date,
+            'status'      => $request->status,
+        ]);
+
+        return back()->with('success', 'মামা, মডাল দিয়ে নোটিশ আপডেট সাকসেসফুল! 🚀');
+    }
+
+    public function contactList()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $messages = \App\Models\Contact::orderBy('created_at', 'desc')->get();
+        return view('backend.manager-panel.contact-us', compact('managers', 'messages'));
+    }
 }

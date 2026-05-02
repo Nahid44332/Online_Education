@@ -16,4 +16,29 @@ class Withdrawal extends Model
     {
         return $this->belongsTo(Teacher::class, 'teacher_id', 'id');
     }
+
+    public function subadmin()
+    {
+        return $this->belongsTo(Subadmin::class, 'subadmin_id');
+    }
+
+    // টিম লিডার রিলেশন
+    public function team_leader() {
+        return $this->belongsTo(Subadmin::class, 'team_leader_id');
+    }
+
+    // ট্রেইনার রিলেশন
+    public function trainer() {
+        return $this->belongsTo(Subadmin::class, 'trainer_id');
+    }
+
+    // হেল্পলাইন রিলেশন
+    public function helpline() {
+        return $this->belongsTo(Subadmin::class, 'helpline_id');
+    }
+
+    // কাউন্সিলর রিলেশন
+    public function counsellor() {
+        return $this->belongsTo(Subadmin::class, 'counsellor_id');
+    }
 }
