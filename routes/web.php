@@ -79,7 +79,7 @@ Route::get('/student/login', [FrontendController::class, 'studentLogin'])->name(
 Route::post('/student/login', [FrontendController::class, 'loginSubmit'])->name('student.login.submit');
 
 //Subadmin Login Route
-Route::get('/subadmin/login', [FrontendController::class, 'subadminLogin']);
+Route::get('/subadmin/login', [FrontendController::class, 'subadminLogin'])->name('subadmin.login');
 Route::post('/subadmin/login/submit', [FrontendController::class, 'subadminLoginSubmit'])->name('subadmin.login.submit');
 Route::get('/subadmin/logout', [FrontendController::class, 'subadminLogout'])->name('subadmin.logout');
 
@@ -269,7 +269,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('/manager/edit/{id}', [SubadminController::class, 'managerEdit'])->name('edit');
     Route::post('/manager/update', [SubadminController::class, 'managerUpdate'])->name('admin.manager.update');
     Route::get('/manager/delete/{id}', [SubadminController::class, 'destroy'])->name('admin.manager.delete');
-    Route::post('/manager/add-points', [SubadminController::class, 'addPoints'])->name('add.points');
+    Route::post('/manager/add-points', [SubadminController::class, 'addManagerPoints'])->name('admin.manager.add-points');
 });
 
 
@@ -449,5 +449,12 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::post('/manager/notice/update/{id}', [ManagerController::class, 'noticeUpdate'])->name('[manager.notice.update');
         Route::get('/manager/notice/delete/{id}', [ManagerController::class, 'noticeDelete'])->name('manager.notice.delete');
         Route::get('/contacts', [ManagerController::class, 'contactList'])->name('manager.contacts');
+        Route::get('/manager/all-report', [ManagerController::class, 'report'])->name('manager.report');
+        Route::get('/manager/student-lock', [ManagerController::class, 'studentLock'])->name('manager.lock.student');
+        Route::get('/manager/student-lock/{id}', [ManagerController::class, 'lockStudent'])->name('manager.student.lock');
+        Route::get('/manager/student-unlock/{id}', [ManagerController::class, 'unlockStudent'])->name('manager.student.unlock');
+        Route::get('/manager/profile', [ManagerController::class, 'profile'])->name('manager.profile');
+        Route::post('profile/update', [ManagerController::class, 'updateProfile'])->name('manager.profile.update');
+        Route::post('password/update', [ManagerController::class, 'updatePassword'])->name('manager.password.update');
     });
 });

@@ -11,8 +11,18 @@ class Manager extends Model
 
     protected $guarded = [];
 
-    public function manager()
-    {
-        return $this->hasOne(Manager::class, 'subadmin_id', 'id');
-    }
+    public function subadmin()
+{
+    return $this->belongsTo(Subadmin::class, 'subadmin_id');
+}
+    
+
+    protected $fillable = [
+        'name',
+        'phone',
+        'dob',
+        'blood',
+        'profile_image', // এই কলামটি অবশ্যই থাকতে হবে
+        'facebook_link'
+    ];
 }

@@ -890,4 +890,46 @@ class SubadminController extends Controller
         DB::table('managers')->where('id', $id)->delete();
         return back()->with('success', 'ম্যানেজার বিদায় নিয়েছে! 🗑️');
     }
+
+    public function addManagerPoints(Request $request)
+{
+   $request->validate([
+        'subadmin_id' => 'required',
+        'amount' => 'required|numeric' // এখানে min:1 রাখা যাবে না
+    ]);
+
+    // সরাসরি managers টেবিল থেকে ডাটা বের করা
+    $manager = \Illuminate\Support\Facades\DB::table('managers')
+                ->where('id', $request->subadmin_id)
+                ->first();
+
+    if ($manager) {
+        $currentPoints = $manager->points ?? 0;
+        $amount = $request->amount;
+
+        // নতুন পয়েন্ট হিসাব (প্লাস এ প্লাস হবে, মাইনাস এ বিয়োগ হবে)
+        $newPoints = $currentPoints + $amount;
+
+        // সুরক্ষা চেক: পয়েন্ট কি মাইনাসে চলে যেতে পারবে? 
+        // যদি না চান যে ব্যালেন্স ০ এর নিচে নামুক, তবে এই চেকটি রাখুন:
+        if ($newPoints < 0) {
+            return back()->with('error', 'মামা, ম্যানেজারের ব্যালেন্স ০ এর নিচে নামানো যাবে না!');
+        }
+
+        // ডাটাবেজ আপডেট
+        \Illuminate\Support\Facades\DB::table('managers')
+            ->where('id', $request->subadmin_id)
+            ->update([
+                'points' => $newPoints,
+                'updated_at' => now()
+            ]);
+
+        // মেসেজ ডাইনামিক করা (যোগ নাকি বিয়োগ)
+        $msg = $amount > 0 ? "৳ $amount পয়েন্ট যোগ করা হয়েছে।" : "৳ " . abs($amount) . " পয়েন্ট কাটা হয়েছে।";
+
+        return back()->with('success', $msg);
+    }
+
+    return back()->with('error', 'ম্যানেজার পাওয়া যায়নি!');
+}
 }

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contact;
 use App\Models\Counsellor;
 use App\Models\Course;
 use App\Models\Helpline;
+use App\Models\Lock;
 use App\Models\Manager;
 use App\Models\Notice;
 use App\Models\Payment;
@@ -690,5 +692,179 @@ class ManagerController extends Controller
         $managers = Manager::where('subadmin_id', $user->id)->first();
         $messages = \App\Models\Contact::orderBy('created_at', 'desc')->get();
         return view('backend.manager-panel.contact-us', compact('managers', 'messages'));
+    }
+
+    public function report(Request $request)
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+
+        $dateFilter = function ($query) use ($start_date, $end_date) {
+            if ($start_date && $end_date) {
+                $query->whereBetween('created_at', [$start_date, $end_date]);
+            }
+        };
+
+        // ১. কাউন্টস (Cards)
+        $counts = [
+            'students'    => \App\Models\Student::where($dateFilter)->count(),
+            'trainers'    => Trainer::count(),
+            'teamleaders' => TeamLeader::count(),
+            'messages'    => Contact::where($dateFilter)->count(),
+            'courses'     => Course::count(),
+            'teachers'    => Teacher::count(),
+        ];
+
+        // ২. আলাদা আলাদা লিস্ট (Tables)
+        $students    = \App\Models\Student::where($dateFilter)->latest()->get();
+        $trainers    = Trainer::latest()->get();
+        $teamleaders = TeamLeader::latest()->get();
+        $messages    = Contact::where($dateFilter)->latest()->get();
+        $teachers    = Teacher::latest()->get();
+        $counsellors = Counsellor::latest()->get();
+        $helplines   = Helpline::latest()->get();
+
+        return view('backend.manager-panel.report', compact(
+            'managers',
+            'counts',
+            'students',
+            'trainers',
+            'teamleaders',
+            'messages',
+            'teachers',
+            'counsellors',
+            'helplines',
+            'start_date',
+            'end_date'
+        ));
+    }
+
+    public function studentLock(Request $request)
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $search = $request->input('search');
+
+        // ২. কুয়েরি শুরু করা
+        $query = Student::with('lock');
+
+        // ৩. যদি ইউজার কিছু লিখে সার্চ করে
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('id', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // ৪. ডাটা গেট করা (প্যাজিনেশন চাইলে paginate(10) দিতে পারেন)
+        $students = $query->latest()->get();
+        return view('backend.manager-panel.student-lock', compact('managers', 'students'));
+    }
+
+    public function lockStudent($id)
+    {
+        Lock::updateOrCreate(
+            ['student_id' => $id],
+            ['is_locked' => 1]
+        );
+
+        return redirect()->back()->with('success', 'Student has been locked successfully!');
+    }
+
+    // স্টুডেন্ট আনলক করা
+    public function unlockStudent($id)
+    {
+        $lock = Lock::where('student_id', $id)->first();
+
+        if ($lock) {
+            $lock->update(['is_locked' => 0]);
+        }
+
+        return redirect()->back()->with('success', 'Student has been unlocked successfully!');
+    }
+
+    public function profile()
+    {
+        $user = Auth::guard('subadmin')->user();
+        $managers = Manager::where('subadmin_id', $user->id)->first();
+        $manager = Manager::first();
+        return view('backend.manager-panel.profile.profile', compact('managers', 'manager'));
+    }
+
+   public function updateProfile(Request $request)
+{
+    // ১. লগইন করা সাব-অ্যাডমিন এবং তার আন্ডারে থাকা ম্যানেজারকে ধরা
+    $subadmin = auth()->user(); 
+    $manager = \App\Models\Manager::where('subadmin_id', $subadmin->id)->first();
+
+    if (!$manager) {
+        return back()->with('error', 'Manager profile not found!');
+    }
+
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    // ২. সাব-অ্যাডমিন টেবিল আপডেট করা (যেখানে Name/Email থাকে)
+    $subadmin->name = $request->name;
+    // আপনি চাইলে ইমেইল আপডেট করার অপশন রাখলে এখানে $subadmin->email দিতে পারেন
+    $subadmin->save(); 
+
+    // ৩. ম্যানেজার টেবিল আপডেট করা (বাকি ডিটেইলস)
+    $manager->name = $request->name; // দুই টেবিলই সিঙ্ক রাখার জন্য নাম এখানেও আপডেট করা ভালো
+    $manager->phone = $request->phone;
+    $manager->blood = $request->blood;
+    $manager->facebook_link = $request->facebook_link;
+
+    if ($request->dob) {
+        $manager->dob = \Carbon\Carbon::parse($request->dob)->format('d/m/Y');
+    }
+
+    if ($request->hasFile('profile_image')) {
+        if ($manager->profile_image && file_exists(public_path($manager->profile_image))) {
+            unlink(public_path($manager->profile_image));
+        }
+
+        $imageName = time() . '_' . uniqid() . '.' . $request->profile_image->extension();
+        $request->profile_image->move(public_path('backend/images/manager'), $imageName);
+
+        $manager->profile_image = 'backend/images/manager/' . $imageName;
+    }
+
+    $manager->save();
+
+    return back()->with('success', 'Profile updated successfully in both tables!');
+}
+
+    public function updatePassword(Request $request)
+    {
+        // ১. ভ্যালিডেশন
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = auth()->user();
+
+        // ২. বর্তমান পাসওয়ার্ড চেক করা
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Current password does not match!');
+        }
+
+        // ৩. নতুন পাসওয়ার্ড আপডেট (Subadmins টেবিল)
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        // ৪. অটো লগআউট লজিক
+        auth()->logout(); // ইউজারকে সেশন থেকে বের করে দেওয়া
+        $request->session()->invalidate(); // সেশন ইনভ্যালিড করা
+        $request->session()->regenerateToken(); // CSRF টোকেন নতুন করে তৈরি করা
+
+        // লগইন পেজে পাঠিয়ে দেওয়া
+        return redirect()->route('subadmin.login')->with('success', 'Password changed successfully! Please login again.');
     }
 }

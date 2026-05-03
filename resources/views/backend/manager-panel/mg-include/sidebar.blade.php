@@ -1,7 +1,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="{{ route('manager.dashboard') }}" class="nav-link">
+            <a href="{{ route('manager.profile') }}" class="nav-link">
                 <div class="nav-profile-image">
                     <div class="nav-profile-image">
                         @if ($managers && $managers->profile_image)
@@ -141,14 +141,14 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('manager.report')}}">
                 <span class="menu-title">Reports</span>
                 <i class="mdi mdi-chart-areaspline menu-icon"></i>
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{route('manager.lock.student')}}">
                 <span class="menu-title">Lock Screen</span>
                 <i class="mdi mdi-lock menu-icon"></i>
             </a>
