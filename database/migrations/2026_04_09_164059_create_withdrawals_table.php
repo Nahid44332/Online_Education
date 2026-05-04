@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('teacher_id'); // কোন টিচার টাকা চাচ্ছেন
             $table->integer('team_leader_id')->nullable();
             $table->integer('trainer_id')->nullable();
+            $table->integer('helpline_id')->nullable();
+            $table->integer('counsellor_id')->nullable();
             $table->integer('amount'); // কত পয়েন্ট/টাকা
             $table->string('method'); // বিকাশ, নগদ নাকি ব্যাংক
             $table->string('account_details'); // ফোন নাম্বার বা একাউন্ট নাম্বার

@@ -69,7 +69,7 @@
                             <p class="mb-0">Here's what's happening with your education center today.</p>
                         </div>
                         <div class="d-none d-md-block">
-                            <button class="btn btn-outline-light btn-sm">View Reports</button>
+                            <a href="{{route('manager.report')}}" class="btn btn-outline-light btn-sm">View Reports</a>
                         </div>
                     </div>
                 </div>
@@ -215,7 +215,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-3">
                             <h4 class="card-title">Recent Student Admission</h4>
-                            <a href="#" class="text-primary small font-weight-bold">View All</a>
+                            <a href="{{route('manager.student')}}" class="text-primary small font-weight-bold">View All</a>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -224,51 +224,36 @@
                                         <th>Student</th>
                                         <th>Course</th>
                                         <th>Payment</th>
-                                        <th>Activity</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td class="py-1">
-                                            <div class="d-flex align-items-center">
-                                                <img src="{{ asset('backend/images/no_image.jpg') }}" alt="image"
-                                                    class="me-2" style="border-radius: 8px;">
-                                                <div>
-                                                    <span class="font-weight-bold d-block">Nahid Hossen</span>
-                                                    <small class="text-muted">ID: #ST-992</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Laravel Dev</td>
-                                        <td><label class="badge badge-success">Paid</label></td>
-                                        <td>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 75%"
-                                                    aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1">
-                                            <div class="d-flex align-items-center">
-                                                <img src="{{ asset('backend/images/no_image.jpg') }}" alt="image"
-                                                    class="me-2" style="border-radius: 8px;">
-                                                <div>
-                                                    <span class="font-weight-bold d-block">Jakir Hossen</span>
-                                                    <small class="text-muted">ID: #ST-854</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Graphics</td>
-                                        <td><label class="badge badge-warning">Partial</label></td>
-                                        <td>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-warning" role="progressbar"
-                                                    style="width: 45%" aria-valuenow="45" aria-valuemin="0"
-                                                    aria-valuemax="100"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    @forelse($recentStudents as $student)
+                            <tr>
+                                <td class="py-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{asset('backend/images/students/'.$student->image)}}" 
+                                             alt="image" class="me-2 shadow-sm" 
+                                             style="border-radius: 8px; width: 35px; height: 35px; object-fit: cover;">
+                                        <div>
+                                            <span class="font-weight-bold d-block text-dark">{{ $student->name }}</span>
+                                            <small class="text-muted">ID: #ST-{{ $student->id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ $student->course->title }}</td>
+                                <td>
+                                    @if($student->status == '1')
+                                        <label class="badge badge-success px-3" style="border-radius: 50px;">Paid</label>
+                                    @else
+                                        <label class="badge badge-warning px-3" style="border-radius: 50px;">Pending</label>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No recent admissions found!</td>
+                            </tr>
+                            @endforelse
                                 </tbody>
                             </table>
                         </div>

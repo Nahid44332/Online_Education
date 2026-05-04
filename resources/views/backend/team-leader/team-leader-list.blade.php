@@ -145,45 +145,76 @@
     </div>
 
     {{-- Add Team Leader Modal --}}
-    <div class="modal fade" id="addTeamLeaderModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content" style="border-radius: 15px;">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title"><i class="mdi mdi-account-plus me-2 text-white"></i> Create New Team Leader</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form action="{{ route('admin.team_leader.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control" placeholder="tl@example.com" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Password <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" placeholder="Enter Full Name" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Designation</label>
-                                <input type="text" name="designation" class="form-control" placeholder="Ex: Lead">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="fw-bold small">Phone</label>
-                                <input type="text" name="phone" class="form-control" placeholder="017XXXXXXXX">
-                            </div>
-                            <div class="col-md-12 mb-3 text-end">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Team Leader</button>
-                            </div>
+   <div class="modal fade" id="addTeamLeaderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 15px;">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="mdi mdi-account-plus me-2 text-white"></i> Create New Team Leader</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ route('admin.team_leader.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold small">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" placeholder="Enter Full Name" required>
                         </div>
-                    </form>
-                </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold small">Designation</label>
+                            <input type="text" name="designation" class="form-control" placeholder="Ex: Lead Executive">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold small">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" placeholder="017XXXXXXXX">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold small">Date of Birth (DOB)</label>
+                            <input type="date" name="dob" class="form-control">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold small">Blood Group</label>
+                            <select name="blood" class="form-control">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold small">Initial Points</label>
+                            <input type="number" name="points" class="form-control" value="0">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold small">Facebook Link</label>
+                            <input type="url" name="facebook_link" class="form-control" placeholder="https://facebook.com/username">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold small">Profile Image</label>
+                            <input type="file" name="profile_image" class="form-control" accept="image/*">
+                        </div>
+
+                        <div class="col-md-12 mt-3 text-end border-top pt-3">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Team Leader</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 @endsection

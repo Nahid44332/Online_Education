@@ -338,6 +338,7 @@ Route::group(['prefix' => 'panel', 'middleware' => 'auth:subadmin'], function ()
         Route::get('/teacher/student-results', [TeacherPanelController::class, 'studentResults'])->name('teacher.student.results');
         Route::post('/gift-points', [TeacherPanelController::class, 'giftPoint'])->name('teacher.gift.point');
         Route::get('/passbook', [TeacherPanelController::class, 'passbook'])->name('passbook');
+        Route::get('/teacher/password-update', [teachersController::class, 'updatePassword'])->name('teacher.password.update');
     });
 
     //Team Leader Panel Route

@@ -70,13 +70,6 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link" href="#">
-                <span class="menu-title">Notice Board</span>
-                <i class="mdi mdi-bell-ring menu-icon"></i>
-            </a>
-        </li>
-
-        <li class="nav-item">
             <a class="nav-link" href="{{route('teacher.view-profile')}}">
                 <span class="menu-title">My Profile</span>
                 <i class="mdi mdi-account-cog menu-icon"></i>

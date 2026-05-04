@@ -100,13 +100,6 @@
                     </ul>
                 </div>
             </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <span class="menu-title">Notice Board</span>
-                    <i class="mdi mdi-bulletin-board menu-icon"></i>
-                </a>
-            </li>
         @endif
 
         {{-- এখানে আপনার আগের এডমিন মেনুগুলো থাকবে, যেগুলোকে @if (Auth::guard('admin')->check()) দিয়ে ঘিরে দিতে পারেন --}}

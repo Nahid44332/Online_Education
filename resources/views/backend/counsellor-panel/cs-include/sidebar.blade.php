@@ -71,12 +71,12 @@
             </div>
         </li>
 
-        <li class="nav-item">
+        {{-- <li class="nav-item">
             <a class="nav-link" href="#">
                 <span class="menu-title">Notice Board</span>
                 <i class="mdi mdi-bell-ring menu-icon"></i>
             </a>
-        </li>
+        </li> --}}
 
         <li class="nav-item">
             <a class="nav-link" href="{{route('counsellor.profile.edit')}}">

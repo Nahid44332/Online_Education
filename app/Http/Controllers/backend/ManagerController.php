@@ -44,6 +44,7 @@ class ManagerController extends Controller
         $today_active = Student::where('status', '1')
             ->whereDate('updated_at', Carbon::today())
             ->count();
+        $recentStudents = Student::with('course')->latest()->limit(5)->get();
         return view('backend.manager-panel.dashboard', compact(
             'managers',
             'active_students',
@@ -57,7 +58,8 @@ class ManagerController extends Controller
             'total_earnings',
             'total_course',
             'today_reg',
-            'today_active'
+            'today_active',
+            'recentStudents'
         ));
     }
 
