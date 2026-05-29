@@ -209,6 +209,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     // Settings & Profile
     Route::get('/profile', [AdminProfileController::class, 'profile']);
     Route::get('/site-seeting', [SettingController::class, 'siteSetting']);
+    Route::post('/site-seeting/update', [SettingController::class, 'siteSettingUpdate']);
     Route::get('/policy-seeting', [SettingController::class, 'policySetting']);
     Route::post('/policy-seeting/update', [SettingController::class, 'policySettingStore']);
     Route::get('/about-us', [SettingController::class, 'aboutUs']);

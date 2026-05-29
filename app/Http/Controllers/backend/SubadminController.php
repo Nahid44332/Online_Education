@@ -215,7 +215,7 @@ class SubadminController extends Controller
             DB::table('transactions')->insert([
                 'team_leader_id' => $withdraw->team_leader_id,
                 'amount'         => $withdraw->amount,
-                'type'           => 'debit', // টাকা কমে যাওয়া মানে ডেবিট
+                'type'           => 'debit',
                 'description'    => 'উইথড্র এপ্রুভ করা হয়েছে (' . $withdraw->method . ')',
                 'created_at'     => now(),
                 'updated_at'     => now(),
